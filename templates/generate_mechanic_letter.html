@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Generate Mechanic Lien Letter{% endblock %}
+
+{% block content %}
+    <div class="card shadow p-4">
+        <h2 class="text-primary text-center">Generate Mechanic Lien Letter</h2>
+
+        <!-- Form to search VIN by last 4 digits -->
+        <form method="POST" class="mt-4">
+            <div class="form-group">
+                <label for="last_4_vin" class="font-weight-bold">Enter Last 4 Digits of VIN:</label>
+                <input type="text" id="last_4_vin" name="last_4_vin" class="form-control" placeholder="Enter VIN..." required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block" name="search_vin">Search VIN</button>
+        </form>
+
+        <!-- Display results if VINs were found -->
+        {% if vins %}
+            <h3 class="mt-4 text-success">Matching VINs Found:</h3>
+            <form method="POST">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover mt-3">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>Select</th>
+                                <th>VIN</th>
+                                <th>Year</th>
+                                <th>Make</th>
+                                <th>Model</th>
+                                <th>Plate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for vin in vins %}
+                            <tr>
+                                <td class="text-center">
+                                    <input type="radio" name="selected_vin" value="{{ vin['vin'] }}" required>
+                                </td>
+                                <td>{{ vin['vin'] }}</td>
+                                <td>{{ vin['year'] }}</td>
+                                <td>{{ vin['make'] }}</td>
+                                <td>{{ vin['model'] }}</td>
+                                <td>{{ vin['plate'] }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <button type="submit" class="btn btn-success btn-block" name="export_vin">Generate Letter</button>
+            </form>
+        {% else %}
+            <div class="alert alert-warning mt-3">
+                No VIN records found. Please search using the last 4 digits of the VIN.
+            </div>
+        {% endif %}
+
+        <!-- Flash messages for success and error notifications -->
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="alert alert-info mt-3">
+                    <ul class="mb-0">
+                        {% for message in messages %}
+                            <li>{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        {% endwith %}
+    </div>
+{% endblock %}

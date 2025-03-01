@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center mb-4">📜 Certified Letter Tracking</h2>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- 🔍 Search Form -->
+    <form method="POST">
+        <input type="text" name="cert_last6" value="{{ request.form.get('cert_last6', '') }}" placeholder="Enter last 6 digits" required>
+        <button type="submit">Search</button>
+    </form>
+
+    <!-- ✅ Display VIN Selection if Matches Found -->
+    {% if vin_data_list %}
+    <div class="mt-5">
+        <h4 class="text-center text-success">✅ Select Matching VIN</h4>
+
+        <form method="POST">
+            <input type="hidden" name="cert_last6" value="{{ request.form.get('cert_last6', '') }}">
+            <div class="mb-3">
+                <label for="selected_vin">Select a VIN:</label>
+                <select name="selected_vin" id="selected_vin" required>
+                    {% for vin in vin_data_list %}
+                        <option value="{{ vin.vin }}">
+                            VIN: {{ vin.vin }} | Year: {{ vin.year }} | Make: {{ vin.make }} | Model: {{ vin.model }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" name="confirm_vin" value="1">Confirm VIN</button>
+        </form>
+    </div>
+    {% endif %}
+
+    <!-- ✅ Display Selected VIN Information -->
+    {% if selected_vin_data %}
+    <div class="mt-5">
+        <h4 class="text-center text-primary">📜 Confirm Certified Letter Delivery</h4>
+
+        <div class="card border-primary">
+            <div class="card-header bg-primary text-white">
+                🚗 Vehicle Information
+            </div>
+            <div class="card-body">
+                <p><strong>VIN:</strong> {{ selected_vin_data.vin }}</p>
+                <p><strong>Year:</strong> {{ selected_vin_data.year }} | 
+                   <strong>Make:</strong> {{ selected_vin_data.make }} | 
+                   <strong>Model:</strong> {{ selected_vin_data.model }}</p>
+            </div>
+        </div>
+
+        <form method="POST">
+            <input type="hidden" name="cert_last6" value="{{ full_cert }}">
+            <input type="hidden" name="confirm_cert" value="1">
+            <input type="hidden" name="selected_vin" value="{{ selected_vin_data.vin }}">
+            <input type="hidden" name="status_field" value="{{ status_field }}">
+            <button type="submit" class="btn btn-success mt-3">Confirm Delivery</button>
+        </form>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
