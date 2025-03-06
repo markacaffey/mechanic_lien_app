@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}📊 Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="text-center text-primary">📊 Mechanic Lien Dashboard</h1>
+
+    <!-- 📌 Quick Stats -->
+    <div class="row text-center">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5>Total Liens</h5>
+                    <h3>{{ total_liens }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <h5>Open Liens</h5>
+                    <h3>{{ open_liens|length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5>Liens In Process</h5>
+                    <h3>{{ liens_in_process }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5>Completed Liens</h5>
+                    <h3>{{ liens_finished }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🔍 Open Liens Table -->
+    <h2 class="mt-4">🔹 Open Liens</h2>
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>VIN</th>
+                <th>Year</th>
+                <th>Make</th>
+                <th>Model</th>
+                <th>Dealer</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for vin in open_liens %}
+            <tr>
+                <td>
+                    <a href="{{ url_for('view_vin', vin_id=vin.vin) }}" class="text-primary fw-bold text-decoration-none">
+                        {{ vin.vin }}
+                    </a>
+                </td>
+                <td>{{ vin.year }}</td>
+                <td>{{ vin.make }}</td>
+                <td>{{ vin.model }}</td>
+                <td>
+                    <a href="{{ url_for('view_dealer', dealer_id=vin.dealer_id) }}" class="text-decoration-none">
+                        {{ vin.dealer_name }}
+                    </a>
+                </td>
+                <td>
+                    <a href="{{ url_for('edit_vin', vin_id=vin.vin) }}" class="btn btn-warning btn-sm">✏ Edit</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- 🔍 Recent Liens -->
+    <h2 class="mt-4">🕒 Recently Added Liens</h2>
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>VIN</th>
+                <th>Year</th>
+                <th>Make</th>
+                <th>Model</th>
+                <th>Dealer</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for vin in recent_liens %}
+            <tr>
+                <td>
+                    <a href="{{ url_for('view_vin', vin_id=vin.vin) }}" class="text-primary fw-bold text-decoration-none">
+                        {{ vin.vin }}
+                    </a>
+                </td>
+                <td>{{ vin.year }}</td>
+                <td>{{ vin.make }}</td>
+                <td>{{ vin.model }}</td>
+                <td>
+                    <a href="{{ url_for('view_dealer', dealer_id=vin.dealer_id) }}" class="text-decoration-none">
+                        {{ vin.dealer_name }}
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+{% endblock %}

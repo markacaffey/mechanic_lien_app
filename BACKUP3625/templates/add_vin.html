@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center mb-4">🚗 Add New VIN</h2>
+
+    <form method="POST" class="row g-2">
+
+        <!-- 🚗 Vehicle Information -->
+        <div class="col-12">
+            <h4 class="bg-primary text-white p-2">🚗 Vehicle Information</h4>
+        </div>
+        <div class="col-md-3"><label>VIN</label><input type="text" name="vin" class="form-control form-control-sm" required></div>
+        <div class="col-md-2"><label>Year</label><input type="text" name="year" class="form-control form-control-sm"></div>
+        <div class="col-md-2"><label>Make</label><input type="text" name="make" class="form-control form-control-sm"></div>
+        <div class="col-md-2"><label>Model</label><input type="text" name="model" class="form-control form-control-sm"></div>
+        <div class="col-md-3"><label>Body</label><input type="text" name="body" class="form-control form-control-sm"></div>
+
+        <div class="col-md-2"><label>Color</label><input type="text" name="color" class="form-control form-control-sm"></div>
+        <div class="col-md-2"><label>Plate</label><input type="text" name="plate" class="form-control form-control-sm"></div>
+        <div class="col-md-2"><label>Weight</label><input type="text" name="weight" class="form-control form-control-sm"></div>
+        <div class="col-md-2"><label>Carring Weight</label><input type="text" name="cweight" class="form-control form-control-sm"></div>
+        <div class="col-md-2"><label>Odometer</label><input type="text" name="odometer" class="form-control form-control-sm"></div>
+
+        <!-- 🛠️ Repair & Location Details -->
+        <div class="col-12">
+            <h4 class="bg-info text-white p-2">🛠️ Repair & Location Details</h4>
+        </div>
+        <div class="col-md-3"><label>Repair Amount ($)</label><input type="number" name="repair_amount" class="form-control form-control-sm" step="0.01"></div>
+        <div class="col-md-3"><label>Dealership County</label><input type="text" name="county" class="form-control form-control-sm"></div>
+
+        <!-- 🏠 Owner Information -->
+        <div class="col-12">
+            <h4 class="bg-success text-white p-2">🏠 Owner Information</h4>
+        </div>
+        <div class="col-md-4"><label>Owner Name</label><input type="text" name="owner" class="form-control form-control-sm"></div>
+        <div class="col-md-4"><label>Address</label><input type="text" name="owner_address1" class="form-control form-control-sm"></div>
+        <div class="col-md-4"><label>City, State Zip</label><input type="text" name="owner_address2" class="form-control form-control-sm"></div>
+
+        <!-- 🔄 Renewal Information -->
+        <div class="col-12">
+            <h4 class="bg-warning text-dark p-2">🔄 Renewal Information</h4>
+        </div>
+        <div class="col-md-4"><label>Renewal Name</label><input type="text" name="renewal" class="form-control form-control-sm"></div>
+        <div class="col-md-4"><label>Address</label><input type="text" name="renewal_address1" class="form-control form-control-sm"></div>
+        <div class="col-md-4"><label>City, State Zip</label><input type="text" name="renewal_address2" class="form-control form-control-sm"></div>
+
+        <!-- 🏦 Lien Holder Information -->
+        <div class="col-12">
+            <h4 class="bg-danger text-white p-2">🏦 Lien Holder Information</h4>
+        </div>
+        <div class="col-md-4"><label>Lien Holder</label><input type="text" name="lein_holder" class="form-control form-control-sm"></div>
+        <div class="col-md-4"><label>Address</label><input type="text" name="lein_holder_address1" class="form-control form-control-sm"></div>
+        <div class="col-md-4"><label>City, State Zip</label><input type="text" name="lein_holder_address2" class="form-control form-control-sm"></div>
+
+        <!-- 🧍 Person Who Left -->
+        <div class="col-12">
+            <h4 class="bg-secondary text-white p-2">🧍 Person Who Left</h4>
+        </div>
+        <div class="col-md-4"><label>Name</label><input type="text" name="person_left" class="form-control form-control-sm"></div>
+        <div class="col-md-4"><label>Address</label><input type="text" name="person_left_address1" class="form-control form-control-sm"></div>
+        <div class="col-md-4"><label>City, State Zip</label><input type="text" name="person_left_address2" class="form-control form-control-sm"></div>
+
+        <!-- 📜 Certification -->
+        <div class="col-12">
+            <h4 class="bg-dark text-white p-2">📜 Certified Letters</h4>
+        </div>
+        {% for i in range(1, 7) %}
+        <div class="col-md-3"><label>Cert {{ i }}</label><input type="text" name="cert{{ i }}" class="form-control form-control-sm"></div>
+        <div class="col-md-3"><label>Status {{ i }}</label><input type="text" name="cert{{ i }}_status" class="form-control form-control-sm" value="WAITING FOR SIGNATURE"></div>
+        {% endfor %}
+
+        <!-- 📅 Important Dates -->
+        <div class="col-12">
+            <h4 class="bg-secondary text-white p-2">📅 Important Dates</h4>
+        </div>
+        <div class="col-md-3"><label>Date Left</label><input type="date" name="date_left" class="form-control form-control-sm"></div>
+        <div class="col-md-3"><label>Date Completed</label><input type="date" name="date_completed" class="form-control form-control-sm"></div>
+        <div class="col-md-3"><label>Date Notified</label><input type="date" name="date_notified" class="form-control form-control-sm"></div>
+        <div class="col-md-3"><label>Sale Date</label><input type="date" name="sale_date" class="form-control form-control-sm"></div>
+
+        <!-- 🔘 Submit -->
+        <div class="col-12 text-center mt-3">
+            <button type="submit" class="btn btn-success btn-lg">✅ Save VIN</button>
+        </div>
+
+    </form>
+</div>
+{% endblock %}

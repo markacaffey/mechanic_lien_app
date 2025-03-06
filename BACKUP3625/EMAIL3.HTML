@@ -1,0 +1,32 @@
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f8f9fa; }
+        .container { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+        .header { background: #007bff; color: #fff; text-align: center; padding: 15px; border-radius: 8px 8px 0 0; }
+        h2 { color: #333; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background: #007bff; color: #fff; }
+        .footer { background: #f1f1f1; padding: 10px; text-align: center; font-size: 12px; color: #666; margin-top: 20px; border-radius: 0 0 8px 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header"><h2>🚗 Mechanic Lien Notification</h2></div>
+        <p>Dear {dealer_name},</p>
+        <p>The mechanic lien process has been updated for the following vehicle:</p>
+        <table>
+            <tr><th>VIN</th><td>{selected_vin_data['vin']}</td></tr>
+            <tr><th>Year</th><td>{selected_vin_data['year']}</td></tr>
+            <tr><th>Make</th><td>{selected_vin_data['make']}</td></tr>
+            <tr><th>Model</th><td>{selected_vin_data['model']}</td></tr>
+        </table>
+        <p><strong>Status:</strong> {selected_vin_data['cert_status']}</p>
+        <p>If you need further assistance, please reply to this email.</p>
+        <div class="footer">
+            This email was sent by My Title Guy | 1234 Business Ave, TX, USA | (123) 456-7890
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}View VIN{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center text-primary">🔍 VIN Details</h1>
+
+    <!-- VIN Details Card -->
+    <div class="card shadow-lg mt-4">
+        <div class="card-header bg-primary text-white text-center">
+            <h4>VIN: {{ vin.vin }}</h4>
+        </div>
+        <div class="card-body">
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item"><strong>Year:</strong> {{ vin.year }}</li>
+                <li class="list-group-item"><strong>Make:</strong> {{ vin.make }}</li>
+                <li class="list-group-item"><strong>Model:</strong> {{ vin.model }}</li>
+                <li class="list-group-item"><strong>Body:</strong> {{ vin.body }}</li>
+                <li class="list-group-item"><strong>Color:</strong> {{ vin.color }}</li>
+                <li class="list-group-item"><strong>Plate:</strong> {{ vin.plate }}</li>
+                <li class="list-group-item"><strong>Dealer:</strong> 
+                    <a href="{{ url_for('view_dealers') }}" class="text-decoration-none">
+    <span class="badge bg-success">{{ vin.dealer_id }}</span>
+</a>
+
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="text-center mt-4">
+        <a href="{{ url_for('edit_vin', vin_id=vin.vin) }}" class="btn btn-warning btn-lg">
+            ✏ Edit VIN
+        </a>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-lg">
+            ⬅ Back to Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}

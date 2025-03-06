@@ -500,33 +500,43 @@ def search_vin():
 
     return render_template("search_vin.html", vins=vins)
 
-@app.route("/select_vin/<int:vin_id>")
+@app.route("/select_vin/<string:vin_id>")
 def select_vin(vin_id):
     """Select a VIN and store the entire record in session, including dealer info."""
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
+
+    print(f"🔍 DEBUG: Received VIN from URL -> '{vin_id}'")
+
+    conn = get_db_connection()
     cursor = conn.cursor()
 
-    # 🔹 Fetch VIN details along with Dealer information
+    # ✅ Fetch VIN details using last 4 digits
     cursor.execute("""
-    SELECT vins.*, dealers.name AS dealer_name, dealers.address AS dealer_address, 
-           dealers.city AS dealer_city, dealers.state AS dealer_state, dealers.zip AS dealer_zip, 
-           dealers.phone AS dealer_phone, dealers.pnumber, dealers.associate1, dealers.associate1tdl, dealers.associate2
-    FROM vins
-    LEFT JOIN dealers ON vins.dealer_id = dealers.dealer_id
-    WHERE vins.rowid = ?
-""", (vin_id,))
-
+        SELECT vins.*, 
+               dealers.name AS dealer_name, 
+               dealers.address AS dealer_address, 
+               dealers.city AS dealer_city, 
+               dealers.state AS dealer_state, 
+               dealers.zip AS dealer_zip, 
+               dealers.phone AS dealer_phone, 
+               dealers.pnumber, 
+               dealers.associate1, 
+               dealers.associate1tdl, 
+               dealers.associate2
+        FROM vins
+        LEFT JOIN dealers ON vins.dealer_id = dealers.dealer_id
+        WHERE vins.vin LIKE ?
+    """, (f"%{vin_id}",))  # 🔹 Ensure wildcard search at the END
 
     selected_vin = cursor.fetchone()
-    conn.close()
 
     if not selected_vin:
+        print(f"⚠ DEBUG: VIN ending in '{vin_id}' NOT FOUND in Database!")
         flash("⚠ VIN not found!", "danger")
-        return redirect(url_for("search_vin"))  # ✅ Ensures redirection happens in case of an error
+        return redirect(url_for("search_vin"))
 
-    # ✅ Store entire VIN + Dealer info in session
-    session["selected_vin"] = dict(selected_vin)
+    # ✅ Store VIN + Dealer info in session safely
+    session["selected_vin"] = {key: selected_vin[key] for key in selected_vin.keys()}
+
     session["dealer_details"] = {
         "name": selected_vin["dealer_name"],
         "address": selected_vin["dealer_address"],
@@ -534,20 +544,20 @@ def select_vin(vin_id):
         "state": selected_vin["dealer_state"],
         "zip": selected_vin["dealer_zip"],
         "phone": selected_vin["dealer_phone"],
-        "associate1": selected_vin["associate1"],
-        "associate1tdl": selected_vin["associate1tdl"],
-        "associate2": selected_vin["associate2"],
+        "pnumber": selected_vin["pnumber"],  
+        "associate1": selected_vin["associate1"],  
+        "associate1tdl": selected_vin["associate1tdl"],  
+        "associate2": selected_vin["associate2"],  
     }
 
-    # Debugging
-    print(f"✅ Stored VIN & Dealer Data in Session: {session['selected_vin']}")
-    print(f"✅ Stored Dealer Details in Session: {session['dealer_details']}")
+    print(f"✅ DEBUG: Stored VIN Data in Session: {session['selected_vin']}")
+    print(f"✅ DEBUG: Stored Dealer Details in Session: {session['dealer_details']}")
 
     flash(f"✅ Selected VIN: {selected_vin['vin']} ({selected_vin['year']} {selected_vin['make']} {selected_vin['model']})", "success")
 
-    return redirect(url_for("select_forms"))  # ✅ Now properly redirects to form selection
+    return redirect(url_for("select_forms"))  
 
-@app.route("/edit_vin/<string:vin_id>", methods=["GET", "POST"])
+@app.route("/edit_vin/<int:vin_id>", methods=["GET", "POST"])
 def edit_vin(vin_id):
     """Edit an existing VIN record."""
     conn = sqlite3.connect(DB_PATH)
@@ -568,12 +578,22 @@ def edit_vin(vin_id):
 
         conn.commit()
         conn.close()
+
+        print(f"✅ DEBUG: VIN {vin_id} updated successfully!")  # ✅ Debugging output
         flash("✅ VIN updated successfully!")
         return redirect(url_for("search_vin"))
 
+    # ✅ Fetch VIN Data
     cursor.execute("SELECT * FROM vins WHERE rowid = ?", (vin_id,))
     vin = cursor.fetchone()
     conn.close()
+
+    if not vin:
+        print(f"⚠ DEBUG: VIN {vin_id} NOT FOUND in database!")
+        flash("⚠ VIN not found!", "danger")
+        return redirect(url_for("search_vin"))
+
+    print(f"✅ DEBUG: Editing VIN Data -> {dict(vin)}")  # ✅ Debugging output
 
     return render_template("edit_vin.html", vin=vin)
 
@@ -1751,7 +1771,7 @@ def generate_mechanic_lien():
     # Define file paths
     form_templates_dir = r"C:\Users\marka\Desktop\mechanic_lien_app\forms"
     file_name = f"{dealer_name}_{vin}_Mechanic_Lien.pdf"
-    form_path = os.path.join(r"C:\Users\marka\Desktop\Mechanic Lien Work Space", file_name)
+    file_path = os.path.join(r"C:\Users\marka\Desktop\Mechanic Lien Work Space", file_name)  # ✅ Ensure file_path is defined
     pdf_template = os.path.join(form_templates_dir, "letter_new_new.pdf")  # Ensure correct filename
 
     print(f"🔍 Generating Mechanic Lien using template: {pdf_template}")
@@ -1762,8 +1782,8 @@ def generate_mechanic_lien():
         return redirect(url_for("search_vin"))
 
     try:
-        generate_mechanic_letter(vin_data, form_path)
-        print(f"✅ Mechanic Lien Letter saved at {file_path}")
+        generate_mechanic_letter(vin_data, file_path, pdf_template)  # ✅ Pass file_path correctly
+        print(f"✅ Mechanic Lien Letter saved: {file_path}")  # ✅ No more undefined file_path error
         flash(f"✅ Mechanic Lien Letter generated: {file_name}", "success")
 
     except Exception as e:
@@ -1772,89 +1792,7 @@ def generate_mechanic_lien():
 
     return redirect(url_for("search_vin"))
 
-from flask import send_file
-
-import sqlite3
-import csv
-import os
-from flask import Flask, request, redirect, url_for, flash, send_file
-
-def get_desktop_path():
-    """Returns the path to the user's desktop."""
-    return os.path.join(os.path.expanduser("~"), "Desktop")
-
-def export_vin_records(last_4_vin, db_path, output_filename="vin_records.csv"):
-    """Exports VIN records to a CSV file based on the last 4 digits."""
-    try:
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
-
-        query = """
-        SELECT vin, year, make, model, 
-               owner, owner_address1, owner_address2,
-               renewal, renewal_address1, renewal_address2,
-               lein_holder, lein_holder_address1, lein_holder_address2,
-               person_left, person_left_address1, person_left_address2
-        FROM vins WHERE vin LIKE ?
-        """
-        cursor.execute(query, ('%' + last_4_vin,))
-        records = cursor.fetchall()
-
-        if not records:
-            print(f"No records found with VIN ending in {last_4_vin}")
-            return None  # No file to return
-
-        headers = ['VIN', 'Last 4 VIN', 'Type', 'Name', 'Address1', 'Address2']
-        desktop_path = get_desktop_path()
-        csv_path = os.path.join(desktop_path, output_filename)
-
-        with open(csv_path, mode='w', newline='', encoding='utf-8') as csvfile:
-            csv_writer = csv.writer(csvfile)
-            csv_writer.writerow(headers)
-
-            for record in records:
-                vin, year, make, model = record[:4]
-                last_4 = vin[-4:]
-                
-                # Data Mapping
-                data_entries = [
-                    ('Owner', record[4:7]),
-                    ('Renewal', record[7:10]),
-                    ('Lien Holder', record[10:13]),
-                    ('Person Left', record[13:16])
-                ]
-
-                for label, (name, address1, address2) in data_entries:
-                    if name and name.strip():
-                        csv_writer.writerow([vin, last_4, label, name.strip(), address1.strip() if address1 else '', address2.strip() if address2 else ''])
-
-        conn.close()
-        return csv_path  # Return path for downloading
-
-    except sqlite3.Error as e:
-        print(f"SQLite error: {e}")
-        return None
-
-import os
-from flask import send_file, flash, redirect, url_for
-
-@app.route("/export_vin/<string:last_4_vin>", methods=["GET"])
-def export_vin(last_4_vin):
-    db_path = r"C:\Users\marka\Desktop\dealers_and_vins.db"
-    output_filename = r"C:\Users\marka\Desktop\vin_records.csv"  # ✅ Always use the same file name
-
-    # ✅ Overwrite the file every time by ensuring the function recreates it
-    if os.path.exists(output_filename):
-        os.remove(output_filename)  # ✅ Delete the file before writing new data
-
-    file_path = export_vin_records(last_4_vin, db_path, output_filename)  # ✅ Ensure new data is written
-
-    if file_path:
-        flash(f"✅ VIN records exported successfully: {file_path}", "success")
-        return send_file(file_path, as_attachment=True)
-    else:
-        flash(f"❌ No records found for {last_4_vin}", "danger")
-        return redirect(url_for("search_vin"))
+# ------------------------------------------------------------------------
 
 @app.route("/dashboard")
 def dashboard():
@@ -1863,55 +1801,49 @@ def dashboard():
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
-    # ✅ Fetch Total Liens (Count)
+    # ✅ Fetch total liens
     cursor.execute("SELECT COUNT(*) FROM vins")
     total_liens = cursor.fetchone()[0]
 
-    # ✅ Fetch Open Liens (No Sale Date & Not Canceled)
-    cursor.execute("""
-        SELECT vins.*, dealers.name AS dealer_name
-        FROM vins
-        LEFT JOIN dealers ON vins.dealer_id = dealers.dealer_id
-        WHERE vins.sale_date IS NULL 
-        AND vins.lien_canceled = 'N/A'
-        ORDER BY vins.date_notified DESC
-    """)
-    open_liens = cursor.fetchall()
+    # ✅ Fetch liens started (sale_date is NULL and not canceled)
+    cursor.execute("SELECT COUNT(*) FROM vins WHERE sale_date IS NULL AND lien_canceled = 'N/A'")
+    liens_started = cursor.fetchone()[0]
 
-    # ✅ Fetch Liens In Process (Status = "In Process")
+    # ✅ Fetch liens in process (status = 'In Process')
     cursor.execute("SELECT COUNT(*) FROM vins WHERE status = 'In Process'")
     liens_in_process = cursor.fetchone()[0]
 
-    # ✅ Fetch Completed Liens (Sale Date Exists or Canceled)
+    # ✅ Fetch finished liens (sale_date exists OR lien_canceled is NOT 'N/A')
     cursor.execute("SELECT COUNT(*) FROM vins WHERE sale_date IS NOT NULL OR lien_canceled != 'N/A'")
     liens_finished = cursor.fetchone()[0]
 
-    # ✅ Fetch Recently Added Liens
+    # ✅ Fetch recent liens (ordered by date_notified)
     cursor.execute("""
-        SELECT vins.*, dealers.name AS dealer_name
-        FROM vins
-        LEFT JOIN dealers ON vins.dealer_id = dealers.dealer_id
-        ORDER BY vins.date_notified DESC
+        SELECT * FROM vins
+        WHERE date_notified IS NOT NULL
+        ORDER BY date_notified DESC
         LIMIT 10
     """)
     recent_liens = cursor.fetchall()
 
-    conn.close()
+    # ✅ Fetch open liens (excluding finished ones)
+    cursor.execute("""
+        SELECT * FROM vins
+        WHERE status NOT IN ('Finished', 'Canceled')
+        ORDER BY date_notified DESC
+    """)
+    open_liens = cursor.fetchall()
 
-    # ✅ Debugging Output (Check Console)
-    print("📌 Total Liens:", total_liens)
-    print("📌 Open Liens Count:", len(open_liens))
-    print("📌 Liens In Process:", liens_in_process)
-    print("📌 Completed Liens:", liens_finished)
-    print("📌 Recent Liens Count:", len(recent_liens))
+    conn.close()
 
     return render_template(
         "dashboard.html",
         total_liens=total_liens,
-        open_liens=open_liens,
+        liens_started=liens_started,
         liens_in_process=liens_in_process,
         liens_finished=liens_finished,
-        recent_liens=recent_liens
+        recent_liens=recent_liens,
+        open_liens=open_liens
     )
 
 @app.route("/update_lien_status/<string:vin>", methods=["POST"])
@@ -1937,37 +1869,6 @@ def update_lien_status(vin):
         conn.close()
 
     return redirect(url_for("dashboard"))
-
-@app.route("/view_vin/<string:vin_id>")
-def view_vin(vin_id):
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM vins WHERE vin = ?", (vin_id,))
-    vin = cursor.fetchone()
-    conn.close()
-    if not vin:
-        flash("VIN not found!", "danger")
-        return redirect(url_for("dashboard"))
-    return render_template("view_vin.html", vin=vin)
-
-@app.route("/view_dealer/<int:dealer_id>")
-def view_dealer(dealer_id):
-    """Displays details for a specific dealer."""
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
-
-    cursor.execute("SELECT * FROM dealers WHERE dealer_id = ?", (dealer_id,))
-    dealer = cursor.fetchone()
-    conn.close()
-
-    if not dealer:
-        flash("⚠ Dealer not found!", "danger")
-        return redirect(url_for("view_dealers"))
-
-    return render_template("view_dealer.html", dealer=dealer)
-
 
 
 # -------------------- Run Flask App --------------------
