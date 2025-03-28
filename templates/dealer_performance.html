@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}📈 Dealer Performance{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="text-center text-primary">📈 Dealer Performance Report</h1>
+
+    <!-- 📌 Quick Stats -->
+    <div class="row text-center">
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5>🏆 Top Performing Dealer</h5>
+                    <h3>{{ top_dealers[0].dealer_name if top_dealers else 'N/A' }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5>Total Dealers</h5>
+                    <h3>{{ top_dealers|length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <h5>Average Liens Per Dealer</h5>
+                    <h3>{{ avg_liens_per_dealer }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📊 Dealer Performance Table -->
+    <h2 class="mt-4">🏢 Dealer Performance</h2>
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>Dealer Name</th>
+                <th>Total Liens</th>
+                <th>Completed Liens</th>
+                <th>Pending Liens</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for dealer in top_dealers %}
+            <tr>
+                <td>
+                    <a href="{{ url_for('view_dealer', dealer_id=dealer.dealer_id) }}" class="text-primary fw-bold text-decoration-none">
+                        {{ dealer.dealer_name }}
+                    </a>
+                </td>
+                <td>{{ dealer.total_liens }}</td>
+                <td>{{ dealer.completed_liens }}</td>
+                <td>{{ dealer.pending_liens }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="text-center mt-4">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">⬅ Back to Dashboard</a>
+    </div>
+
+</div>
+{% endblock %}

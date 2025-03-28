@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Pricing Plans{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="text-center mb-5 font-weight-bold">Choose Your Plan</h2>
+    <div class="row justify-content-center">
+
+        <!-- Flex Plan -->
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card border-primary shadow-sm h-100">
+                <div class="card-header bg-primary text-white text-center">
+                    <h4 class="my-1">Flex</h4>
+                </div>
+                <div class="card-body text-center">
+                    <h2 class="card-title">$100</h2>
+                    <p class="text-muted">Per Lien</p>
+                    <ul class="list-unstyled">
+                        <li>Pay as you go</li>
+                        <li>Full access per lien</li>
+                        <li>No monthly fee</li>
+                    </ul>
+		    <a href="{{ url_for('create_checkout_session', product_id='prod_S1QAhjdXNwJwN7') }}" class="btn btn-outline-primary btn-block mt-3">Choose Plan</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Starter Plan -->
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card border-success shadow-sm h-100">
+                <div class="card-header bg-success text-white text-center">
+                    <h4 class="my-1">Starter</h4>
+                </div>
+                <div class="card-body text-center">
+                    <h2 class="card-title">$199</h2>
+                    <p class="text-muted">Monthly</p>
+                    <ul class="list-unstyled">
+                        <li>3 liens/month included</li>
+                        <li>$75 per extra lien</li>
+                        <li>Email support</li>
+                    </ul>
+                    <a href="{{ url_for('create_checkout_session', product_id='prod_S1QBDNEaIzGh56') }}" class="btn btn-outline-primary btn-block mt-3">Choose Plan</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pro Plan -->
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card border-info shadow-sm h-100">
+                <div class="card-header bg-info text-white text-center">
+                    <h4 class="my-1">Pro</h4>
+                </div>
+                <div class="card-body text-center">
+                    <h2 class="card-title">$375</h2>
+                    <p class="text-muted">Monthly</p>
+                    <ul class="list-unstyled">
+                        <li>10 liens/month included</li>
+                        <li>$50 per extra lien</li>
+                        <li>Priority support</li>
+                    </ul>
+                    <a href="{{ url_for('create_checkout_session', product_id='prod_S1QCRPghaGFaooM') }}" class="btn btn-outline-primary btn-block mt-3">Choose Plan</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enterprise Plan -->
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card border-dark shadow-sm h-100">
+                <div class="card-header bg-dark text-white text-center">
+                    <h4 class="my-1">Enterprise</h4>
+                </div>
+                <div class="card-body text-center">
+                    <h2 class="card-title">$699</h2>
+                    <p class="text-muted">Monthly</p>
+                    <ul class="list-unstyled">
+                        <li>25 liens/month included</li>
+                        <li>Custom pricing for more</li>
+                        <li>Premium support</li>
+                    </ul>
+                    <a href="{{ url_for('create_checkout_session', product_id='prod_S1QDvVcnd8SaPf') }}" class="btn btn-outline-primary btn-block mt-3">Choose Plan</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

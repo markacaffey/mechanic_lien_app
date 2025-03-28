@@ -1,11 +1,48 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash, send_file
+from dotenv import load_dotenv
+load_dotenv()
+import os
+# stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+db_path = os.path.join(os.getcwd(), "dealers_and_vins.db")
+print("📁 DB file path:", db_path)
+print("📄 DB file inode:", os.stat(db_path).st_ino)
+# delete the above if this works
 import os
 import sqlite3
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, send_file
 import fitz  # PyMuPDF for PDF generation
 
+# Database path
+DB_PATH = os.path.join(os.getcwd(), "dealers_and_vins.db")
+print("🚨 Using DB from:", DB_PATH)
+
+# Initialize Flask app
+app = Flask(__name__)
+
+# NEW SECTION FOR LOGIN
+def create_users_table():
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            pnumber TEXT NOT NULL,
+            email TEXT NOT NULL UNIQUE,
+            password_hash TEXT NOT NULL,
+            role TEXT NOT NULL CHECK(role IN ('dealer', 'admin'))
+        )
+    """)
+    conn.commit()
+    conn.close()
+    print("✅ users table checked/created.")
+
+# Call function to create the users table
+create_users_table()
+
+# Email-related imports (you might move these to where email logic is written)
 import smtplib
 from email.mime.text import MIMEText
-import sqlite3
+from email.mime.multipart import MIMEMultipart
 # --------------- SENDING EMAILS -----------------------------------------------
 from flask import Flask, request, render_template, redirect, url_for, flash
 import sqlite3
@@ -14,7 +51,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 app = Flask(__name__)
-DB_PATH = r"C:\Users\marka\Desktop\dealers_and_vins.db"
+# DB_PATH = r"C:\Users\marka\Desktop\dealers_and_vins.db"
 
 # SMTP Configuration
 SMTP_SERVER = "smtp.gmail.com"
@@ -263,10 +300,10 @@ def combine_address(name, address1, address2):
 
 
 app = Flask(__name__)
-app.secret_key = "your_secret_key"  # Required for session handling
+app.secret_key = "6a973f13b8c14b5eb4b90f78f4c25792e7abff5631e74203ab56a56fe9e8c521"
 
 # Define database path
-DB_PATH = r"C:\Users\marka\Desktop\dealers_and_vins.db"
+# DB_PATH = r"C:\Users\marka\Desktop\dealers_and_vins.db"
 mechanic_lien_template_path = r"C:\Users\marka\Desktop\mechanic_lien_app\forms\letter_new_new.pdf"
 
 
@@ -418,9 +455,16 @@ def view_dealers():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM dealers ORDER BY name ASC")
+
+    # Check user role and fetch appropriate data
+    if session.get("role") == "dealer":
+        cursor.execute("SELECT * FROM dealers WHERE dealer_id = ?", (session.get("dealer_id"),))
+    else:
+        cursor.execute("SELECT * FROM dealers ORDER BY name ASC")  # Admin sees all
+
     dealers = cursor.fetchall()
     conn.close()
+
     return render_template("view_dealers.html", dealers=dealers)
 
 @app.route("/add_dealer", methods=["GET", "POST"])
@@ -547,36 +591,77 @@ def select_vin(vin_id):
 
     return redirect(url_for("select_forms"))  # ✅ Now properly redirects to form selection
 
-@app.route("/edit_vin/<string:vin_id>", methods=["GET", "POST"])
+@app.route("/edit_vin/<vin_id>", methods=["GET", "POST"])
 def edit_vin(vin_id):
-    """Edit an existing VIN record."""
+    """Allows editing of a VIN record and updating it in the database."""
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
     if request.method == "POST":
-        vin_data = {key: request.form.get(key, "") for key in request.form}
-        vin_data["vin_id"] = vin_id
+        # ✅ Capture form data (including status)
+        vin = request.form.get("vin", "").strip()
+        year = request.form.get("year", "").strip()
+        make = request.form.get("make", "").strip()
+        model = request.form.get("model", "").strip()
+        body = request.form.get("body", "").strip()
+        color = request.form.get("color", "").strip()
+        plate = request.form.get("plate", "").strip()
+        weight = request.form.get("weight", "").strip()
+        cweight = request.form.get("cweight", "").strip()
+        odometer = request.form.get("odometer", "").strip()
+        repair_amount = request.form.get("repair_amount", "").strip()
+        county = request.form.get("county", "").strip()
+        owner = request.form.get("owner", "").strip()
+        owner_address1 = request.form.get("owner_address1", "").strip()
+        owner_address2 = request.form.get("owner_address2", "").strip()
+        renewal = request.form.get("renewal", "").strip()
+        renewal_address1 = request.form.get("renewal_address1", "").strip()
+        renewal_address2 = request.form.get("renewal_address2", "").strip()
+        lein_holder = request.form.get("lein_holder", "").strip()
+        lein_holder_address1 = request.form.get("lein_holder_address1", "").strip()
+        lein_holder_address2 = request.form.get("lein_holder_address2", "").strip()
+        person_left = request.form.get("person_left", "").strip()
+        person_left_address1 = request.form.get("person_left_address1", "").strip()
+        person_left_address2 = request.form.get("person_left_address2", "").strip()
+        date_left = request.form.get("date_left", "").strip()
+        date_completed = request.form.get("date_completed", "").strip()
+        date_notified = request.form.get("date_notified", "").strip()
+        sale_date = request.form.get("sale_date", "").strip()
+        status = request.form.get("status", "").strip()  # ✅ Capture the status
 
+        # ✅ Update the database
         cursor.execute("""
-            UPDATE vins SET 
-                vin = :vin, year = :year, make = :make, model = :model, body = :body, color = :color, plate = :plate, 
-                weight = :weight, odometer = :odometer, owner = :owner, owner_address1 = :owner_address1, 
-                owner_address2 = :owner_address2, repair_amount = :repair_amount
-            WHERE rowid = :vin_id
-        """, vin_data)
+            UPDATE vins SET
+                vin = ?, year = ?, make = ?, model = ?, body = ?, color = ?, 
+                plate = ?, weight = ?, cweight = ?, odometer = ?, repair_amount = ?, 
+                county = ?, owner = ?, owner_address1 = ?, owner_address2 = ?, 
+                renewal = ?, renewal_address1 = ?, renewal_address2 = ?, 
+                lein_holder = ?, lein_holder_address1 = ?, lein_holder_address2 = ?, 
+                person_left = ?, person_left_address1 = ?, person_left_address2 = ?, 
+                date_left = ?, date_completed = ?, date_notified = ?, sale_date = ?, 
+                status = ?
+            WHERE vin = ?
+        """, (
+            vin, year, make, model, body, color, plate, weight, cweight, odometer,
+            repair_amount, county, owner, owner_address1, owner_address2, renewal, 
+            renewal_address1, renewal_address2, lein_holder, lein_holder_address1, 
+            lein_holder_address2, person_left, person_left_address1, person_left_address2, 
+            date_left, date_completed, date_notified, sale_date, status, vin_id
+        ))
 
         conn.commit()
         conn.close()
-        flash("✅ VIN updated successfully!")
-        return redirect(url_for("search_vin"))
 
-    cursor.execute("SELECT * FROM vins WHERE rowid = ?", (vin_id,))
+        # ✅ Redirect to view the updated record
+        return redirect(url_for("view_vin", vin_id=vin_id))
+
+    # ✅ Fetch VIN data for GET request (displaying the form)
+    cursor.execute("SELECT * FROM vins WHERE vin = ?", (vin_id,))
     vin = cursor.fetchone()
     conn.close()
 
-    return render_template("edit_vin.html", vin=vin)
-
+    return render_template("view_vin.html", vin=vin)  # ✅ View & Edit in same page
 
 # -------------------- Mechanic Lien Letter Generation --------------------
 @app.route("/select_dealer_for_vin")
@@ -864,7 +949,7 @@ import sqlite3
 from datetime import datetime
 
 # Define database path
-DB_PATH = r"C:\Users\marka\Desktop\dealers_and_vins.db"
+# DB_PATH = r"C:\Users\marka\Desktop\dealers_and_vins.db"
 
 # ✅ Fix: Define the missing function
 def get_db_connection():
@@ -874,15 +959,21 @@ def get_db_connection():
     return conn
 
 
+import sqlite3
+from flask import request, redirect, url_for, flash, render_template
+from datetime import datetime
+
 @app.route("/certify_tracking", methods=["GET", "POST"])
 def certify_tracking():
+    """Processes certified letter tracking and updates cert1_status through cert6_status upon sending an email."""
+    
     vin_data_list = []
     selected_vin_data = None
     certs_found = []
     emails_found = []
     status_field = None
     full_cert = None
-    conn = None  # Prevent UnboundLocalError
+    conn = None  
 
     if request.method == "POST":
         cert_last6 = request.form.get("cert_last6", "").strip()
@@ -934,15 +1025,15 @@ def certify_tracking():
 
                         if confirm_cert and full_cert and selected_vin and status_field:
                             new_status = f"DELIVERED ON {datetime.today().strftime('%Y-%m-%d')}"
-                            update_query = f"UPDATE vins SET {status_field} = ? WHERE vin = ? AND dealer_id = ?"
+                            update_query = f"UPDATE vins SET {status_field} = ? WHERE vin = ?"
 
                             try:
-                                cursor.execute(update_query, (new_status, selected_vin, selected_vin_data["dealer_id"]))
+                                cursor.execute(update_query, (new_status, selected_vin))
                                 conn.commit()
 
                                 cursor.execute(
-                                    f"SELECT vin, {status_field} FROM vins WHERE vin = ? AND dealer_id = ?",
-                                    (selected_vin, selected_vin_data["dealer_id"]),
+                                    f"SELECT vin, {status_field} FROM vins WHERE vin = ?",
+                                    (selected_vin,)
                                 )
                                 updated_record = cursor.fetchone()
 
@@ -1075,76 +1166,76 @@ def certify_tracking():
 @app.route("/update_cert_status", methods=["POST"])
 def update_cert_status():
     """Updates the certified letter status as delivered and notifies the dealer."""
-    
+
     vin_id = request.form.get("vin_id")
     matched_status_field = request.form.get("matched_status_field")
     matched_cert = request.form.get("matched_cert")
-	
+
     if not vin_id or not matched_status_field or not matched_cert:
         flash("⚠ Missing information for update!", "danger")
         return redirect(url_for("certify_tracking"))
 
     conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-    
-    # Update the status to "Delivered - {current date}"
+
+    # ✅ Update the status to "Delivered - {current date}"
     system_date = datetime.now().strftime("%Y-%m-%d")
     update_query = f"UPDATE vins SET {matched_status_field} = ? WHERE id = ?"
     cursor.execute(update_query, (f"Delivered - {system_date}", vin_id))
     conn.commit()
 
-    # Fetch updated record for email notification
+    # ✅ Fetch updated VIN and Dealer in the same connection
     cursor.execute("SELECT * FROM vins WHERE id = ?", (vin_id,))
     vin_record = cursor.fetchone()
-    conn.close()
 
-    # Send email to dealer
+    dealer = None
     if vin_record and vin_record["dealer_id"]:
-        cursor = conn.cursor()
         cursor.execute("SELECT * FROM dealers WHERE dealer_id = ?", (vin_record["dealer_id"],))
         dealer = cursor.fetchone()
-        conn.close()
 
-        if dealer and dealer["email"]:
-            subject = f"📜 Certified Letter Delivered - VIN {vin_record['vin']}"
+    conn.close()  # ✅ Close only after you're done
 
-            body = f"""
-            <html>
-            <head>
-                <meta charset="UTF-8">
-                <title>Certified Letter Delivered</title>
-                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-            </head>
-            <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
-                <div style="max-width: 600px; margin: auto; background: #ffffff; padding: 20px; border-radius: 10px; border: 1px solid #ddd;">
-                    
-                    <div style="background: #28a745; color: #ffffff; padding: 15px; text-align: center; font-size: 20px; border-radius: 10px 10px 0 0;">
-                        📜 Certified Letter Delivered
-                    </div>
-
-                    <div style="padding: 15px;">
-                        <p>Dear <strong>{dealer['name']}</strong>,</p>
-                        <p>The following certified letter has been successfully delivered:</p>
-                        
-                        <div class="card border-primary">
-                            <div class="card-header bg-primary text-white"><strong>📜 Certification Details</strong></div>
-                            <div class="card-body">
-                                <table class="table table-bordered">
-                                    <tr><th>VIN</th><td>{vin_record['vin']}</td></tr>
-                                    <tr><th>Full Cert Number</th><td>{matched_cert}</td></tr>
-                                    <tr><th>Delivered On</th><td>{system_date}</td></tr>
-                                </table>
-                            </div>
-                        </div>
-
-                        <p>Best Regards,<br><strong>The Mechanic Lien Team</strong></p>
-                    </div>
+    # ✅ Send email
+    if dealer and dealer["email"]:
+        subject = f"📜 Certified Letter Delivered - VIN {vin_record['vin']}"
+        body = f"""
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Certified Letter Delivered</title>
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        </head>
+        <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
+            <div style="max-width: 600px; margin: auto; background: #ffffff; padding: 20px; border-radius: 10px; border: 1px solid #ddd;">
+                
+                <div style="background: #28a745; color: #ffffff; padding: 15px; text-align: center; font-size: 20px; border-radius: 10px 10px 0 0;">
+                    📜 Certified Letter Delivered
                 </div>
-            </body>
-            </html>
-            """
 
-            send_dealer_email(dealer["email"], subject, body)
+                <div style="padding: 15px;">
+                    <p>Dear <strong>{dealer['name']}</strong>,</p>
+                    <p>The following certified letter has been successfully delivered:</p>
+                    
+                    <div class="card border-primary">
+                        <div class="card-header bg-primary text-white"><strong>📜 Certification Details</strong></div>
+                        <div class="card-body">
+                            <table class="table table-bordered">
+                                <tr><th>VIN</th><td>{vin_record['vin']}</td></tr>
+                                <tr><th>Full Cert Number</th><td>{matched_cert}</td></tr>
+                                <tr><th>Delivered On</th><td>{system_date}</td></tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <p>Best Regards,<br><strong>The Mechanic Lien Team</strong></p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+
+        send_dealer_email(dealer["email"], subject, body)
 
     flash("✅ Certified letter marked as delivered & email sent!", "success")
     return redirect(url_for("certify_tracking"))
@@ -1840,7 +1931,7 @@ from flask import send_file, flash, redirect, url_for
 
 @app.route("/export_vin/<string:last_4_vin>", methods=["GET"])
 def export_vin(last_4_vin):
-    db_path = r"C:\Users\marka\Desktop\dealers_and_vins.db"
+  #  db_path = r"C:\Users\marka\Desktop\dealers_and_vins.db"
     output_filename = r"C:\Users\marka\Desktop\vin_records.csv"  # ✅ Always use the same file name
 
     # ✅ Overwrite the file every time by ensuring the function recreates it
@@ -1859,51 +1950,116 @@ def export_vin(last_4_vin):
 @app.route("/dashboard")
 def dashboard():
     """Displays the dashboard with updated lien information."""
+
+    print("🧪 Session contents:", dict(session))
+
+    dealer_id = session.get("dealer_id")
+    role = session.get("role")
+
+    if not role:
+        flash("Unauthorized access. Please log in.", "danger")
+        return redirect(url_for("login"))
+
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
-    # ✅ Fetch Total Liens (Count)
-    cursor.execute("SELECT COUNT(*) FROM vins")
+    status_filter = request.args.get("status", "All")
+
+    # ✅ Total Liens
+    if role == "admin":
+        cursor.execute("SELECT COUNT(*) FROM vins")
+    else:
+        cursor.execute("SELECT COUNT(*) FROM vins WHERE dealer_id = ?", (dealer_id,))
     total_liens = cursor.fetchone()[0]
 
-    # ✅ Fetch Open Liens (No Sale Date & Not Canceled)
-    cursor.execute("""
-        SELECT vins.*, dealers.name AS dealer_name
-        FROM vins
-        LEFT JOIN dealers ON vins.dealer_id = dealers.dealer_id
-        WHERE vins.sale_date IS NULL 
-        AND vins.lien_canceled = 'N/A'
-        ORDER BY vins.date_notified DESC
-    """)
+    # ✅ Open Liens
+    if role == "admin":
+        cursor.execute("""
+            SELECT vins.*, dealers.name AS dealer_name
+            FROM vins
+            LEFT JOIN dealers ON vins.dealer_id = dealers.dealer_id
+            WHERE vins.sale_date IS NULL 
+              AND (vins.lien_canceled IS NULL OR vins.lien_canceled = '' OR vins.lien_canceled = 'N/A')
+            ORDER BY vins.date_notified DESC
+        """)
+    else:
+        cursor.execute("""
+            SELECT vins.*, dealers.name AS dealer_name
+            FROM vins
+            LEFT JOIN dealers ON vins.dealer_id = dealers.dealer_id
+            WHERE vins.dealer_id = ?
+              AND vins.sale_date IS NULL 
+              AND (vins.lien_canceled IS NULL OR vins.lien_canceled = '' OR vins.lien_canceled = 'N/A')
+            ORDER BY vins.date_notified DESC
+        """, (dealer_id,))
     open_liens = cursor.fetchall()
 
-    # ✅ Fetch Liens In Process (Status = "In Process")
-    cursor.execute("SELECT COUNT(*) FROM vins WHERE status = 'In Process'")
+    # ✅ Liens In Process
+    if role == "admin":
+        cursor.execute("SELECT COUNT(*) FROM vins WHERE status = 'In Process'")
+    else:
+        cursor.execute("SELECT COUNT(*) FROM vins WHERE status = 'In Process' AND dealer_id = ?", (dealer_id,))
     liens_in_process = cursor.fetchone()[0]
 
-    # ✅ Fetch Completed Liens (Sale Date Exists or Canceled)
-    cursor.execute("SELECT COUNT(*) FROM vins WHERE sale_date IS NOT NULL OR lien_canceled != 'N/A'")
+    # ✅ Completed Liens
+    if role == "admin":
+        cursor.execute("""
+            SELECT COUNT(*) FROM vins
+            WHERE sale_date IS NOT NULL OR lien_canceled != 'N/A'
+        """)
+    else:
+        cursor.execute("""
+            SELECT COUNT(*) FROM vins
+            WHERE dealer_id = ? AND (sale_date IS NOT NULL OR lien_canceled != 'N/A')
+        """, (dealer_id,))
     liens_finished = cursor.fetchone()[0]
 
-    # ✅ Fetch Recently Added Liens
-    cursor.execute("""
-        SELECT vins.*, dealers.name AS dealer_name
-        FROM vins
-        LEFT JOIN dealers ON vins.dealer_id = dealers.dealer_id
-        ORDER BY vins.date_notified DESC
-        LIMIT 10
-    """)
-    recent_liens = cursor.fetchall()
+    # ✅ Recent Liens (with filter)
+    if role == "admin":
+        if status_filter == "All":
+            cursor.execute("""
+                SELECT vins.*, dealers.name AS dealer_name
+                FROM vins
+                LEFT JOIN dealers ON vins.dealer_id = dealers.dealer_id
+                ORDER BY vins.date_notified DESC
+            """)
+        else:
+            cursor.execute("""
+                SELECT vins.*, dealers.name AS dealer_name
+                FROM vins
+                LEFT JOIN dealers ON vins.dealer_id = dealers.dealer_id
+                WHERE vins.status = ?
+                ORDER BY vins.date_notified DESC
+            """, (status_filter,))
+    else:
+        if status_filter == "All":
+            cursor.execute("""
+                SELECT vins.*, dealers.name AS dealer_name
+                FROM vins
+                LEFT JOIN dealers ON vins.dealer_id = dealers.dealer_id
+                WHERE vins.dealer_id = ?
+                ORDER BY vins.date_notified DESC
+            """, (dealer_id,))
+        else:
+            cursor.execute("""
+                SELECT vins.*, dealers.name AS dealer_name
+                FROM vins
+                LEFT JOIN dealers ON vins.dealer_id = dealers.dealer_id
+                WHERE vins.dealer_id = ? AND vins.status = ?
+                ORDER BY vins.date_notified DESC
+            """, (dealer_id, status_filter))
 
+    recent_liens = cursor.fetchall()
     conn.close()
 
-    # ✅ Debugging Output (Check Console)
+    # ✅ Debug Output
     print("📌 Total Liens:", total_liens)
     print("📌 Open Liens Count:", len(open_liens))
     print("📌 Liens In Process:", liens_in_process)
     print("📌 Completed Liens:", liens_finished)
     print("📌 Recent Liens Count:", len(recent_liens))
+    print("📌 Selected Filter:", status_filter)
 
     return render_template(
         "dashboard.html",
@@ -1911,24 +2067,32 @@ def dashboard():
         open_liens=open_liens,
         liens_in_process=liens_in_process,
         liens_finished=liens_finished,
-        recent_liens=recent_liens
+        recent_liens=recent_liens,
+        status_filter=status_filter
     )
 
 @app.route("/update_lien_status/<string:vin>", methods=["POST"])
 def update_lien_status(vin):
-    """Updates the status of a lien in the database."""
-    new_status = request.form.get("status")
+    """Updates the status of a lien based on sale date and canceled flag."""
 
-    if not new_status:
-        flash("❌ No status selected.", "danger")
-        return redirect(url_for("dashboard"))
+    sale_date = request.form.get("sale_date")  # Get sale date from form
+    canceled = request.form.get("canceled")  # Get canceled checkbox (if checked)
 
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
     try:
+        # Determine new status
+        if sale_date:
+            new_status = "Completed"
+        elif canceled:
+            new_status = "Canceled"
+        else:
+            new_status = "Open"
+
         # ✅ Update lien status in the database
-        cursor.execute("UPDATE vins SET status = ? WHERE vin = ?", (new_status, vin))
+        cursor.execute("UPDATE vins SET status = ?, sale_date = ?, canceled = ? WHERE vin = ?",
+                       (new_status, sale_date, bool(canceled), vin))
         conn.commit()
         flash(f"✅ Lien status updated to {new_status}!", "success")
     except sqlite3.Error as e:
@@ -1943,12 +2107,21 @@ def view_vin(vin_id):
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM vins WHERE vin = ?", (vin_id,))
+
+    if session.get("role") == "dealer":
+        # Only fetch the VIN if it belongs to the logged-in dealer
+        cursor.execute("SELECT * FROM vins WHERE vin = ? AND dealer_id = ?", (vin_id, session.get("dealer_id")))
+    else:
+        # Admins and superusers can view all
+        cursor.execute("SELECT * FROM vins WHERE vin = ?", (vin_id,))
+
     vin = cursor.fetchone()
     conn.close()
+
     if not vin:
-        flash("VIN not found!", "danger")
+        flash("⚠ VIN not found or access denied.", "danger")
         return redirect(url_for("dashboard"))
+
     return render_template("view_vin.html", vin=vin)
 
 @app.route("/view_dealer/<int:dealer_id>")
@@ -1968,8 +2141,430 @@ def view_dealer(dealer_id):
 
     return render_template("view_dealer.html", dealer=dealer)
 
+@app.route("/reports")
+def reports():
+    return render_template("reports.html")
+
+@app.route("/report/lien_summary")
+def lien_summary_report():
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    # Total Liens
+    cursor.execute("SELECT COUNT(*) FROM vins")
+    total_liens = cursor.fetchone()[0]
+
+    # Status Breakdown
+    cursor.execute("SELECT status, COUNT(*) FROM vins GROUP BY status")
+    status_counts = {row[0]: row[1] for row in cursor.fetchall()}
+
+    # Individual Status Counts
+    in_process_liens = status_counts.get("In-Process", 0)
+    completed_liens = status_counts.get("Completed", 0)
+    canceled_liens = status_counts.get("Canceled", 0)
+
+    # Liens in the last 30 days
+    cursor.execute("SELECT COUNT(*) FROM vins WHERE date_notified >= date('now', '-30 days')")
+    liens_last_30_days = cursor.fetchone()[0]
+
+    # Completed in last 30 days
+    cursor.execute("SELECT COUNT(*) FROM vins WHERE sale_date >= date('now', '-30 days')")
+    liens_completed_last_30_days = cursor.fetchone()[0]
+
+    conn.close()
+
+    return render_template("lien_summary.html",
+                           total_liens=total_liens,
+                           liens_by_status=status_counts.items(),
+                           in_process_liens=in_process_liens,
+                           completed_liens=completed_liens,
+                           canceled_liens=canceled_liens,
+                           liens_last_30_days=liens_last_30_days,
+                           liens_completed_last_30_days=liens_completed_last_30_days)
+
+
+@app.route("/report/dealer_performance")
+def dealer_performance_report():
+    """Shows dealer performance based on lien completion and counts."""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    # Dealers with the most liens
+    cursor.execute("""
+        SELECT dealers.name, COUNT(vins.vin) AS lien_count 
+        FROM dealers 
+        JOIN vins ON dealers.dealer_id = vins.dealer_id 
+        GROUP BY dealers.name 
+        ORDER BY lien_count DESC 
+        LIMIT 10
+    """)
+    top_dealers = cursor.fetchall()
+
+    conn.close()
+
+    return render_template("dealer_performance.html", top_dealers=top_dealers)
+
+@app.route("/report/pending_actions")
+def pending_actions_report():
+    """Generates a report of all pending actions for mechanic liens."""
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row  # ✅ Fetch results as dictionaries instead of tuples
+    cursor = conn.cursor()
+
+    # Fetch all pending liens (where sale_date is NULL)
+    cursor.execute("""
+        SELECT vins.vin, vins.year, vins.make, vins.model, vins.date_notified, 
+               dealers.name AS dealer_name, dealers.dealer_id
+        FROM vins
+        JOIN dealers ON vins.dealer_id = dealers.dealer_id
+        WHERE vins.sale_date IS NULL
+        ORDER BY vins.date_notified DESC
+    """)
+    pending_actions = cursor.fetchall()  # ✅ This now returns dictionaries, not tuples
+
+    conn.close()
+
+    return render_template("pending_actions_report.html", pending_actions=pending_actions)
+
+@app.route("/report/revenue")
+def revenue_report():
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    # Fetch total revenue
+    cursor.execute("SELECT SUM(amount) FROM payments")  # Ensure `amount` exists
+    total_revenue = cursor.fetchone()[0] or 0  # Handle None case
+
+    # Fetch revenue from last 30 days
+    cursor.execute("SELECT SUM(amount) FROM payments WHERE date >= date('now', '-30 days')")
+    revenue_last_30_days = cursor.fetchone()[0] or 0  # Handle None case
+
+    # Fetch pending payments
+    cursor.execute("SELECT SUM(amount) FROM payments WHERE status = 'Pending'")
+    pending_revenue = cursor.fetchone()[0] or 0  # Handle None case
+
+    conn.close()
+
+    revenue_data = {
+        "total_revenue": total_revenue,
+        "revenue_last_30_days": revenue_last_30_days,
+        "pending_revenue": pending_revenue
+    }
+
+    return render_template("revenue_report.html", revenue_data=revenue_data)
+
+@app.route("/report/certified_letter_tracking")
+def certified_letter_tracking_report():
+    """Generates a report for certified letters sent and their delivery status with filters."""
+    status_filter = request.args.get("status", "All")  # Get status filter from query parameters
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row  
+    cursor = conn.cursor()
+
+    # ✅ Fetch all necessary data including Owner, Renewal, Lien Holder, and Person Left
+    cursor.execute("""
+        SELECT vin, owner, renewal, lein_holder, person_left, date_notified, status, 
+               cert1, cert1_status, cert2, cert2_status, cert3, cert3_status, 
+               cert4, cert4_status, cert5, cert5_status, cert6, cert6_status
+        FROM vins
+        ORDER BY vin ASC
+    """)
+    raw_certified_letters = cursor.fetchall()
+
+    certified_letters = []
+    
+    for row in raw_certified_letters:
+        cert_details = []  # Stores certification numbers & statuses
+        sent_status = False  # Tracks if at least one cert was sent
+
+        for i in range(1, 7):
+            cert_number = row[f"cert{i}"]
+            cert_status = row[f"cert{i}_status"]
+
+            if cert_number and cert_number.strip() not in ('', 'N/A', None):
+                sent_status = True  # ✅ At least one cert was sent
+
+            cert_details.append({
+                "cert_number": cert_number if cert_number else "N/A",
+                "status": cert_status if cert_status else "Not Sent"
+            })
+
+        # ✅ Use `date_notified` if at least one letter was sent
+        sent_date = row["date_notified"] if sent_status else "Not Sent"
+
+        # ✅ Check if any cert status is 'Delivered'
+        delivered_status = any(c["status"] == "Delivered" for c in cert_details)
+
+        # ✅ Set final status
+        if delivered_status:
+            final_status = "Delivered"
+        elif sent_status:
+            final_status = "In Transit"
+        else:
+            final_status = "Not Sent"
+
+        # ✅ Append cleaned-up row
+        certified_letters.append({
+            "vin": row["vin"],
+            "owner": row["owner"],
+            "renewal": row["renewal"] if row["renewal"] else "N/A",
+            "lein_holder": row["lein_holder"] if row["lein_holder"] else "N/A",
+            "person_left": row["person_left"] if row["person_left"] else "N/A",
+            "status": row["status"],  
+            "sent": "Yes" if sent_status else "No",
+            "sent_date": sent_date,
+            "letter_status": final_status,
+            "cert_details": cert_details  # ✅ Store cert numbers & statuses as a list
+        })
+
+    conn.close()
+
+    # ✅ Apply filter if not "All"
+    if status_filter != "All":
+        certified_letters = [letter for letter in certified_letters if letter["letter_status"] == status_filter]
+
+    return render_template(
+        "certified_letter_tracking_report.html", 
+        certified_letters=certified_letters, 
+        status_filter=status_filter
+    )
+
+@app.route('/export_lien_summary')
+def export_lien_summary():
+    liens = get_lien_data()  # Replace this with your function to fetch lien data
+
+    def generate():
+        data = [
+            ['VIN', 'Dealer Name', 'Status', 'Date Notified', 'Sale Date']
+        ]
+        for lien in liens:
+            status = 'Completed' if lien['sale_date'] else ('Canceled' if lien['lien_canceled'] != 'N/A' else 'Open')
+            data.append([lien['vin'], lien['dealer_name'], status, lien['date_notified'], lien['sale_date'] or 'Pending'])
+
+        output = csv.StringIO()
+        writer = csv.writer(output)
+        writer.writerows(data)
+        return output.getvalue()
+
+    response = Response(generate(), mimetype="text/csv")
+    response.headers.set("Content-Disposition", "attachment", filename="lien_summary.csv")
+    return response
+
+def get_lien_data():
+    """Fetches all lien records from the database."""
+    liens = db.session.query(Lien).all()  # Ensure 'Lien' is your model
+    return liens
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    if request.method == "POST":
+        pnumber = request.form["pnumber"].strip().upper()
+        email = request.form["email"]
+        password = request.form["password"]
+        hashed_pw = generate_password_hash(password)
+
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+
+        # Step 1: Look for existing dealer in your main app DB
+        cursor.execute("SELECT dealer_id FROM dealers WHERE pnumber = ?", (pnumber,))
+        dealer = cursor.fetchone()
+
+        if dealer:
+            dealer_id = dealer["dealer_id"]
+        else:
+            # Step 2: Pull info from TexasDealerships.db
+            texas_conn = sqlite3.connect("C:/Users/marka/Desktop/mechanic_lien_app/TexasDealerships.db")
+            texas_conn.row_factory = sqlite3.Row
+            texas_cursor = texas_conn.cursor()
+
+            texas_cursor.execute("SELECT * FROM dealers WHERE pnumber = ?", (pnumber,))
+            dealer_info = texas_cursor.fetchone()
+            texas_conn.close()
+
+            if dealer_info:
+                cursor.execute("""
+                    INSERT INTO dealers (pnumber, name, address, city, state, zip)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                """, (
+                    dealer_info["pnumber"],
+                    dealer_info["name"],
+                    dealer_info["address"],
+                    dealer_info["city"],
+                    dealer_info["state"],
+                    dealer_info["zip"]
+                ))
+                dealer_id = cursor.lastrowid
+                print(f"✅ Imported dealer from Texas DB: {pnumber} → dealer_id {dealer_id}")
+            else:
+                flash("❌ P number not found in Texas Dealerships database.", "danger")
+                return redirect(url_for("register"))
+
+        # Step 3: Register the user with the found or created dealer_id
+        cursor.execute("""
+            INSERT INTO users (pnumber, email, password_hash, role, dealer_id)
+            VALUES (?, ?, ?, 'dealer', ?)
+        """, (pnumber, email, hashed_pw, dealer_id))
+
+        conn.commit()
+        conn.close()
+
+        flash("✅ Registration successful! Please log in.", "success")
+        return redirect(url_for("login"))
+
+    return render_template("register.html")
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        pnumber = request.form["pnumber"].strip().upper()
+        password = request.form["password"]
+
+        print(f"🔎 Input pnumber: '{pnumber}' | length: {len(pnumber)} | hex: {pnumber.encode().hex().upper()}")
+        print(f"📁 DB file path: {DB_PATH}")
+
+        conn = sqlite3.connect(f"file:{DB_PATH}?mode=rw", uri=True)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT COUNT(*) FROM users")
+        total_users = cursor.fetchone()[0]
+        print(f"📊 Total rows in users table (Flask): {total_users}")
+
+        cursor.execute("PRAGMA table_info(users)")
+        columns = cursor.fetchall()
+        print("📋 users table columns:")
+        for col in columns:
+            print(dict(col))
+
+        # ⬇️ Includes account_status explicitly
+        cursor.execute("SELECT id, pnumber, email, password_hash, role, dealer_id, account_status FROM users")
+        all_users = cursor.fetchall()
+
+        user = None
+        print("🔍 Brute-forcing user match...")
+        for row in all_users:
+            row_pnumber = row["pnumber"].strip().upper()
+            print(f"🔁 Comparing '{pnumber}' to '{row_pnumber}'")
+            if row_pnumber == pnumber:
+                print("✅ MATCH FOUND!")
+                user = dict(row)
+                print("🧪 Fetched user row:", user)
+                break
+
+        conn.close()
+
+        if user:
+            print(f"✅ User found: {user['pnumber']}, role: {user['role']}")
+            if check_password_hash(user["password_hash"], password):
+                if user.get("account_status", "active") != "active":
+                    flash("⚠ Your account is inactive. Please contact support.", "danger")
+                    return redirect(url_for("login"))
+
+                session["user_id"] = user["id"]
+                session["pnumber"] = user["pnumber"]
+                session["role"] = user["role"]
+                session["dealer_id"] = user.get("dealer_id")
+
+                print("🔐 SET SESSION dealer_id:", session.get("dealer_id"))
+                flash(f"✅ Welcome back, {user['pnumber']}!", "success")
+
+                # ✅ Ensure redirect works by returning a proper route
+                if user["role"] == "admin":
+                    return redirect(url_for("dashboard"))
+                else:
+                    return redirect(url_for("select_dealer_for_vin"))
+            else:
+                flash("❌ Incorrect password.", "danger")
+        else:
+            print("❌ User not found in database")
+            flash("❌ User not found.", "danger")
+
+    return render_template("login.html")
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    flash("👋 You've been logged out.", "info")
+    return redirect(url_for("login"))
+
+@app.route("/pricing")
+def pricing():
+    return render_template("pricing.html")
+
+import stripe
+from flask import redirect
+
+stripe.api_key = "your_stripe_secret_key"  # Replace with your actual key
+
+@app.route("/create-checkout-session/<product_id>")
+def create_checkout_session(product_id):
+    try:
+        session = stripe.checkout.Session.create(
+            payment_method_types=["card"],
+            line_items=[
+                {
+                    "price_data": {
+                        "currency": "usd",
+                        "product": product_id,
+                        "unit_amount": 10000,  # amount in cents (example only)
+                        "recurring": {"interval": "month"}  # if subscription
+                    },
+                    "quantity": 1,
+                }
+            ],
+            mode="payment",  # or "subscription"
+            success_url=url_for('checkout_success', _external=True),
+            cancel_url=url_for('checkout_cancel', _external=True),
+        )
+        return redirect(session.url, code=303)
+    except Exception as e:
+        return str(e)
+
+@app.route("/checkout_success")
+def checkout_success():
+    return "✅ Payment successful! Thank you."
+
+@app.route("/checkout_cancel")
+def checkout_cancel():
+    return "❌ Payment canceled. Please try again."
+
+import stripe
+from flask import request
+
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+endpoint_secret = os.getenv("STRIPE_WEBHOOK_SECRET")  # We'll get this in the next step
+
+@app.route('/stripe/webhook', methods=['POST'])
+def stripe_webhook():
+    payload = request.data
+    sig_header = request.headers.get('stripe-signature')
+    event = None
+
+    try:
+        event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
+    except ValueError as e:
+        print("⚠️ Invalid payload:", e)
+        return '', 400
+    except stripe.error.SignatureVerificationError as e:
+        print("❌ Invalid signature:", e)
+        return '', 400
+
+    # 🔁 Handle event types
+    if event['type'] == 'checkout.session.completed':
+        session = event['data']['object']
+        print("✅ Payment success! Session:", session)
+        # TODO: update database, activate subscription, etc.
+
+    elif event['type'] == 'invoice.payment_failed':
+        print("❌ Payment failed")
+
+    # Return 200 to acknowledge receipt
+    return '', 200
 
 
 # -------------------- Run Flask App --------------------
 if __name__ == "__main__":
+    create_users_table()  # ✅ This must come BEFORE app.run()
     app.run(debug=True)

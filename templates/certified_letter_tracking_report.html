@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}📜 Certified Letter Tracking Report{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center text-primary fw-bold">📜 Certified Letter Tracking Report</h2>
+
+    <!-- 🔎 Filter by Status Dropdown -->
+    <form method="GET" action="{{ url_for('certified_letter_tracking_report') }}" class="mb-4">
+        <label for="status_filter">Filter by Status:</label>
+        <select name="status" id="status_filter" class="form-select d-inline w-auto" onchange="this.form.submit()">
+            <option value="All" {% if status_filter == "All" %}selected{% endif %}>All</option>
+            <option value="Delivered" {% if status_filter == "Delivered" %}selected{% endif %}>Delivered</option>
+            <option value="In Transit" {% if status_filter == "In Transit" %}selected{% endif %}>In Transit</option>
+            <option value="Not Sent" {% if status_filter == "Not Sent" %}selected{% endif %}>Not Sent</option>
+        </select>
+    </form>
+
+    <div class="row">
+        {% for vin in certified_letters %}
+        <div class="col-md-6">
+            <div class="card mb-3 shadow-sm">
+                <div class="card-header bg-dark text-white">
+                    <h5>📌 VIN: {{ vin.vin }}</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Owner:</strong> {{ vin.owner }}</p>
+                    <p><strong>Renewal:</strong> {{ vin.renewal }}</p>
+                    <p><strong>Lien Holder:</strong> {{ vin.lein_holder }}</p>
+                    <p><strong>Person Left:</strong> {{ vin.person_left }}</p>
+                    <p><strong>Sent Date:</strong> {{ vin.sent_date }}</p>
+
+                    <h6 class="mt-3">📜 Certification Details:</h6>
+                    <div class="table-responsive">
+                        <table class="table table-bordered text-center">
+                            <thead class="table-dark text-white">
+                                <tr>
+                                    <th>Cert #</th>
+                                    <th>Tracking Number</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for cert in vin.cert_details %}
+                                <tr>
+                                    <td>Cert {{ loop.index }}</td>
+                                    <td>{{ cert.cert_number }}</td>
+                                    <td>{{ cert.status }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

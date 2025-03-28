@@ -1,43 +1,104 @@
 {% extends "base.html" %}
 
-{% block title %}View VIN{% endblock %}
+{% block title %}🔍 View VIN Details{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <h1 class="text-center text-primary">🔍 VIN Details</h1>
-
-    <!-- VIN Details Card -->
-    <div class="card shadow-lg mt-4">
-        <div class="card-header bg-primary text-white text-center">
-            <h4>VIN: {{ vin.vin }}</h4>
+<div class="container mt-4">
+    <h1 class="text-center text-primary">🔍 View & Edit VIN Details</h1>
+    <form method="POST" action="{{ url_for('edit_vin', vin_id=vin.vin) }}" class="row g-3">
+    
+        <!-- 🚗 Vehicle Information -->
+        <div class="col-12">
+            <h4 class="bg-primary text-white p-2">🚗 Vehicle Information</h4>
         </div>
-        <div class="card-body">
-            <ul class="list-group list-group-flush">
-                <li class="list-group-item"><strong>Year:</strong> {{ vin.year }}</li>
-                <li class="list-group-item"><strong>Make:</strong> {{ vin.make }}</li>
-                <li class="list-group-item"><strong>Model:</strong> {{ vin.model }}</li>
-                <li class="list-group-item"><strong>Body:</strong> {{ vin.body }}</li>
-                <li class="list-group-item"><strong>Color:</strong> {{ vin.color }}</li>
-                <li class="list-group-item"><strong>Plate:</strong> {{ vin.plate }}</li>
-                <li class="list-group-item"><strong>Dealer:</strong> 
-                    <a href="{{ url_for('view_dealers') }}" class="text-decoration-none">
-    <span class="badge bg-success">{{ vin.dealer_id }}</span>
-</a>
+        <div class="col-md-3"><label>VIN</label><input type="text" class="form-control" name="vin" value="{{ vin.vin }}" required></div>
+        <div class="col-md-2"><label>Year</label><input type="text" class="form-control" name="year" value="{{ vin.year }}" required></div>
+        <div class="col-md-2"><label>Make</label><input type="text" class="form-control" name="make" value="{{ vin.make }}" required></div>
+        <div class="col-md-2"><label>Model</label><input type="text" class="form-control" name="model" value="{{ vin.model }}" required></div>
+        <div class="col-md-3"><label>Body</label><input type="text" class="form-control" name="body" value="{{ vin.body }}"></div>
 
-                    </a>
-                </li>
-            </ul>
+        <div class="col-md-2"><label>Color</label><input type="text" class="form-control" name="color" value="{{ vin.color }}"></div>
+        <div class="col-md-2"><label>Plate</label><input type="text" class="form-control" name="plate" value="{{ vin.plate }}"></div>
+        <div class="col-md-2"><label>Weight</label><input type="text" class="form-control" name="weight" value="{{ vin.weight }}"></div>
+        <div class="col-md-2"><label>Carrying Weight</label><input type="text" class="form-control" name="cweight" value="{{ vin.cweight }}"></div>
+        <div class="col-md-2"><label>Odometer</label><input type="text" class="form-control" name="odometer" value="{{ vin.odometer }}"></div>
+
+        <!-- 🛠️ Repair & Location Details -->
+        <div class="col-12">
+            <h4 class="bg-info text-white p-2">🛠️ Repair & Location Details</h4>
         </div>
-    </div>
+        <div class="col-md-3"><label>Repair Amount ($)</label><input type="number" class="form-control" name="repair_amount" value="{{ vin.repair_amount }}"></div>
+        <div class="col-md-3"><label>Dealership County</label><input type="text" class="form-control" name="county" value="{{ vin.county }}"></div>
 
-    <!-- Action Buttons -->
-    <div class="text-center mt-4">
-        <a href="{{ url_for('edit_vin', vin_id=vin.vin) }}" class="btn btn-warning btn-lg">
-            ✏ Edit VIN
-        </a>
-        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-lg">
-            ⬅ Back to Dashboard
-        </a>
-    </div>
+        <!-- 🏠 Owner Information -->
+        <div class="col-12">
+            <h4 class="bg-success text-white p-2">🏠 Owner Information</h4>
+        </div>
+        <div class="col-md-4"><label>Owner Name</label><input type="text" class="form-control" name="owner" value="{{ vin.owner }}"></div>
+        <div class="col-md-4"><label>Address</label><input type="text" class="form-control" name="owner_address1" value="{{ vin.owner_address1 }}"></div>
+        <div class="col-md-4"><label>City, State Zip</label><input type="text" class="form-control" name="owner_address2" value="{{ vin.owner_address2 }}"></div>
+
+        <!-- 🔄 Renewal Information -->
+        <div class="col-12">
+            <h4 class="bg-warning text-dark p-2">🔄 Renewal Information</h4>
+        </div>
+        <div class="col-md-4"><label>Renewal Name</label><input type="text" class="form-control" name="renewal" value="{{ vin.renewal }}"></div>
+        <div class="col-md-4"><label>Address</label><input type="text" class="form-control" name="renewal_address1" value="{{ vin.renewal_address1 }}"></div>
+        <div class="col-md-4"><label>City, State Zip</label><input type="text" class="form-control" name="renewal_address2" value="{{ vin.renewal_address2 }}"></div>
+
+        <!-- 🏦 Lien Holder Information -->
+        <div class="col-12">
+            <h4 class="bg-danger text-white p-2">🏦 Lien Holder Information</h4>
+        </div>
+        <div class="col-md-4"><label>Lien Holder</label><input type="text" class="form-control" name="lein_holder" value="{{ vin.lein_holder }}"></div>
+        <div class="col-md-4"><label>Address</label><input type="text" class="form-control" name="lein_holder_address1" value="{{ vin.lein_holder_address1 }}"></div>
+        <div class="col-md-4"><label>City, State Zip</label><input type="text" class="form-control" name="lein_holder_address2" value="{{ vin.lein_holder_address2 }}"></div>
+
+        <!-- 🧍 Person Who Left -->
+        <div class="col-12">
+            <h4 class="bg-secondary text-white p-2">🧍 Person Who Left</h4>
+        </div>
+        <div class="col-md-4"><label>Name</label><input type="text" class="form-control" name="person_left" value="{{ vin.person_left }}"></div>
+        <div class="col-md-4"><label>Address</label><input type="text" class="form-control" name="person_left_address1" value="{{ vin.person_left_address1 }}"></div>
+        <div class="col-md-4"><label>City, State Zip</label><input type="text" class="form-control" name="person_left_address2" value="{{ vin.person_left_address2 }}"></div>
+
+        <!-- 📜 Certification -->
+        <div class="col-12">
+            <h4 class="bg-dark text-white p-2">📜 Certified Letters</h4>
+        </div>
+        {% for i in range(1, 7) %}
+        <div class="col-md-3"><label>Cert {{ i }}</label><input type="text" class="form-control" name="cert{{ i }}" value="{{ vin['cert' ~ i] }}"></div>
+        <div class="col-md-3"><label>Status {{ i }}</label><input type="text" class="form-control" name="cert{{ i }}_status" value="{{ vin['cert' ~ i ~ '_status'] }}"></div>
+        {% endfor %}
+
+        <!-- 📅 Important Dates -->
+        <div class="col-12">
+            <h4 class="bg-secondary text-white p-2">📅 Important Dates</h4>
+        </div>
+        <div class="col-md-3"><label>Date Left</label><input type="date" class="form-control" name="date_left" value="{{ vin.date_left }}"></div>
+        <div class="col-md-3"><label>Date Completed</label><input type="date" class="form-control" name="date_completed" value="{{ vin.date_completed }}"></div>
+        <div class="col-md-3"><label>Date Notified</label><input type="date" class="form-control" name="date_notified" value="{{ vin.date_notified }}"></div>
+        <div class="col-md-3"><label>Sale Date</label><input type="date" class="form-control" name="sale_date" value="{{ vin.sale_date }}"></div>
+
+               <!-- 📌 Status Update -->
+        <div class="col-12">
+            <h4 class="bg-dark text-white p-2">📌 Update Lien Status</h4>
+        </div>
+        <div class="col-md-4">
+            <label>Status</label>
+            <select class="form-control" name="status">
+                <option value="In Process" {% if vin.status == "In Process" %}selected{% endif %}>In-Process</option>
+                <option value="Completed" {% if vin.status == "Completed" %}selected{% endif %}>Completed</option>
+                <option value="Canceled" {% if vin.status == "Canceled" %}selected{% endif %}>Canceled</option>
+            </select>
+        </div>
+
+        <!-- 🔘 Submit -->
+        <div class="col-12 text-center mt-3">
+            <button type="submit" class="btn btn-success">💾 Save Changes</button>
+            <a href="{{ url_for('search_vin') }}" class="btn btn-secondary">❌ Cancel</a>
+        </div>
+    </form>
 </div>
 {% endblock %}
+
