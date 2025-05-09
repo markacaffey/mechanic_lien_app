@@ -155,23 +155,23 @@ def email_forms_with_attachments(files, to_email, vin="", dealer_name="Dealer"):
     form_list_html = "".join(f"<li>{os.path.basename(f[0]).replace('_', ' ')}</li>" for f in files)
     html_body = f"""
     <html>
-      <body style="font-family: Arial, sans-serif; color: #333;">
+        <body style="font-family: Arial, sans-serif; color: #333;">
         <div style="max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
-          <h2 style="color: #2E86C1;">📄 Your Mechanic Lien Forms Are Attached</h2>
-          <p>Hello {dealer_name},</p>
-          <p>Your requested forms for VIN <strong>{vin}</strong> are attached:</p>
-          <ul>{form_list_html}</ul>
-          <p>
+        <h2 style="color: #2E86C1;">📄 Your Mechanic Lien Forms Are Attached</h2>
+        <p>Hello {dealer_name},</p>
+        <p>Your requested forms for VIN <strong>{vin}</strong> are attached:</p>
+        <ul>{form_list_html}</ul>
+        <p>
             If you have any questions, feel free to reach out to us at 
             <a href="mailto:markacaffey@gmail.com">markacaffey@gmail.com</a>.
-          </p>
-          <p style="margin-top: 30px;">Warm regards,<br>
-          <strong>The Mechanic Lien App Team at My Title Guy</strong><br>
-          <em>Mechanic Liens Made Easy</em></p>
-          <hr style="margin-top: 40px;">
-          <small style="color: #888;">This email was sent automatically. Please do not reply to this message.</small>
+        </p>
+        <p style="margin-top: 30px;">Warm regards,<br>
+        <strong>The Mechanic Lien App Team at My Title Guy</strong><br>
+        <em>Mechanic Liens Made Easy</em></p>
+        <hr style="margin-top: 40px;">
+        <small style="color: #888;">This email was sent automatically. Please do not reply to this message.</small>
         </div>
-      </body>
+        </body>
     </html>
     """
     msg.set_content("Your forms are ready. Please open the attached files.")
@@ -726,8 +726,8 @@ def search_vin():
             # 🔹 Fetch VIN details and associated Dealer
             cursor.execute("""
     SELECT vins.*, dealers.name AS dealer_name, dealers.address AS dealer_address, 
-           dealers.city AS dealer_city, dealers.state AS dealer_state, dealers.zip AS dealer_zip, 
-           dealers.phone AS dealer_phone
+            dealers.city AS dealer_city, dealers.state AS dealer_state, dealers.zip AS dealer_zip, 
+            dealers.phone AS dealer_phone
     FROM vins
     LEFT JOIN dealers ON vins.dealer_id = dealers.dealer_id
     WHERE vins.vin LIKE ?
@@ -752,8 +752,8 @@ def select_vin(vin_id):
     # 🔹 Fetch VIN details along with Dealer information
     cursor.execute("""
     SELECT vins.*, dealers.name AS dealer_name, dealers.address AS dealer_address, 
-           dealers.city AS dealer_city, dealers.state AS dealer_state, dealers.zip AS dealer_zip, 
-           dealers.phone AS dealer_phone, dealers.pnumber, dealers.associate1, dealers.associate1tdl, dealers.associate2
+            dealers.city AS dealer_city, dealers.state AS dealer_state, dealers.zip AS dealer_zip, 
+            dealers.phone AS dealer_phone, dealers.pnumber, dealers.associate1, dealers.associate1tdl, dealers.associate2
     FROM vins
     LEFT JOIN dealers ON vins.dealer_id = dealers.dealer_id
     WHERE vins.rowid = ?
@@ -797,13 +797,48 @@ def edit_vin(vin_id):
     cursor = conn.cursor()
 
     if request.method == "POST":
-        vin_data = {key: request.form.get(key, "").strip() for key in request.form}
+
+        # ✅ Capture form data (including status)
+        vin = request.form.get("vin", "").strip()
+        year = request.form.get("year", "").strip()
+        make = request.form.get("make", "").strip()
+        model = request.form.get("model", "").strip()
+        body = request.form.get("body", "").strip()
+        color = request.form.get("color", "").strip()
+        plate = request.form.get("plate", "").strip()
+        weight = request.form.get("weight", "").strip()
+        cweight = request.form.get("cweight", "").strip()
+        odometer = request.form.get("odometer", "").strip()
+        repair_amount = request.form.get("repair_amount", "").strip()
+        county = request.form.get("county", "").strip()
+        owner = request.form.get("owner", "").strip()
+        owner_address1 = request.form.get("owner_address1", "").strip()
+        owner_address2 = request.form.get("owner_address2", "").strip()
+        renewal = request.form.get("renewal", "").strip()
+        renewal_address1 = request.form.get("renewal_address1", "").strip()
+        renewal_address2 = request.form.get("renewal_address2", "").strip()
+        lein_holder = request.form.get("lein_holder", "").strip()
+        lein_holder_address1 = request.form.get("lein_holder_address1", "").strip()
+        lein_holder_address2 = request.form.get("lein_holder_address2", "").strip()
+        person_left = request.form.get("person_left", "").strip()
+        person_left_address1 = request.form.get("person_left_address1", "").strip()
+        person_left_address2 = request.form.get("person_left_address2", "").strip()
+        date_left = request.form.get("date_left", "").strip()
+        date_completed = request.form.get("date_completed", "").strip()
+        date_notified = request.form.get("date_notified", "").strip()
+        sale_date = request.form.get("sale_date", "").strip()
+        status = request.form.get("status", "").strip()  # ✅ Capture the status
+
+        # ✅ Update the database
+        cursor.execute("""
+
+        vin_data = {key: request.form.get(key, "") for key in request.form}
 
         # Handle cert status updates
-        cert_status_fields = [vin_data.get(f"cert{i}_status", "") for i in range(1, 7)]
+        cert_status_fields = [request.form.get(f"cert{i}_status", "").strip() for i in range(1, 7)]
 
-        # Perform UPDATE
-        cursor.execute("""
+        cursor.execute(f"""
+
             UPDATE vins SET
                 vin = ?, year = ?, make = ?, model = ?, body = ?, color = ?, 
                 plate = ?, weight = ?, cweight = ?, odometer = ?, repair_amount = ?, 
@@ -812,6 +847,16 @@ def edit_vin(vin_id):
                 lein_holder = ?, lein_holder_address1 = ?, lein_holder_address2 = ?, 
                 person_left = ?, person_left_address1 = ?, person_left_address2 = ?, 
                 date_left = ?, date_completed = ?, date_notified = ?, sale_date = ?, 
+
+                status = ?
+            WHERE vin = ?
+        """, (
+            vin, year, make, model, body, color, plate, weight, cweight, odometer,
+            repair_amount, county, owner, owner_address1, owner_address2, renewal, 
+            renewal_address1, renewal_address2, lein_holder, lein_holder_address1, 
+            lein_holder_address2, person_left, person_left_address1, person_left_address2, 
+            date_left, date_completed, date_notified, sale_date, status, vin_id
+
                 status = ?, 
                 cert1_status = ?, cert2_status = ?, cert3_status = ?, 
                 cert4_status = ?, cert5_status = ?, cert6_status = ?
@@ -825,22 +870,19 @@ def edit_vin(vin_id):
             vin_data["person_left"], vin_data["person_left_address1"], vin_data["person_left_address2"],
             vin_data["date_left"], vin_data["date_completed"], vin_data["date_notified"], vin_data["sale_date"],
             vin_data["status"], *cert_status_fields, vin_id
+
         ))
 
         conn.commit()
         conn.close()
-        flash("✅ VIN updated successfully!")
+
+
+        # ✅ Redirect to view the updated record
         return redirect(url_for("view_vin", vin_id=vin_id))
 
-    # GET request: Load VIN record for form
-    cursor.execute("SELECT * FROM vins WHERE vin = ?", (vin_id,))
-    vin = cursor.fetchone()
-    conn.close()
+    # ✅ Fetch VIN data for GET request (displaying the form)
 
-    if vin:
-        return render_template("edit_vin.html", vin=vin)
-    else:
-        flash("❌ VIN not found.")
+        flash("✅ VIN updated successfully!")
         return redirect(url_for("dashboard"))
 
     # ✅ Get the record to populate the form
@@ -1074,7 +1116,7 @@ from datetime import datetime
 def certify_tracking():
 
     """Processes certified letter tracking and updates cert1_status through cert6_status upon sending an email."""
-    
+
 
     """Update certified letter status and notify dealer."""
 
@@ -1105,7 +1147,7 @@ def certify_tracking():
             cursor.execute("""
                 SELECT vins.*, vins.rowid AS rowid FROM vins 
                 WHERE substr(cert1, -6) = ? OR substr(cert2, -6) = ? OR substr(cert3, -6) = ? 
-                      OR substr(cert4, -6) = ? OR substr(cert5, -6) = ? OR substr(cert6, -6) = ?
+                        OR substr(cert4, -6) = ? OR substr(cert5, -6) = ? OR substr(cert6, -6) = ?
             """, (cert_last6,) * 6)
 
             rows = cursor.fetchall()
@@ -1254,7 +1296,7 @@ def update_cert_status():
         </head>
         <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
             <div style="max-width: 600px; margin: auto; background: #ffffff; padding: 20px; border-radius: 10px; border: 1px solid #ddd;">
-                
+
                 <div style="background: #28a745; color: #ffffff; padding: 15px; text-align: center; font-size: 20px; border-radius: 10px 10px 0 0;">
                     📜 Certified Letter Delivered
                 </div>
@@ -1262,7 +1304,7 @@ def update_cert_status():
                 <div style="padding: 15px;">
                     <p>Dear <strong>{dealer['name']}</strong>,</p>
                     <p>The following certified letter has been successfully delivered:</p>
-                    
+
                     <div class="card border-primary">
                         <div class="card-header bg-primary text-white"><strong>📜 Certification Details</strong></div>
                         <div class="card-body">
@@ -1290,7 +1332,7 @@ def certified_log():
     cursor = conn.cursor()
     cursor.execute("""
         SELECT vin, year, make, model, dealer_id, cert1, cert1_status, cert2, cert2_status, 
-               cert3, cert3_status, cert4, cert4_status, cert5, cert5_status, cert6, cert6_status
+                cert3, cert3_status, cert4, cert4_status, cert5, cert5_status, cert6, cert6_status
         FROM vins
         ORDER BY date_notified DESC
     """)
@@ -1369,32 +1411,32 @@ def update_cert_status():
     subject = f"📬 Certified Letter Returned - VIN {vin['vin']}"
     body = f"""
     <html>
-      <body style="font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px;">
+        <body style="font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px;">
         <div style="max-width: 600px; margin: auto; background-color: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
-          <h2 style="background-color: #dc3545; color: white; padding: 10px; border-radius: 5px; text-align: center;">📬 Certified Letter Returned</h2>
+        <h2 style="background-color: #dc3545; color: white; padding: 10px; border-radius: 5px; text-align: center;">📬 Certified Letter Returned</h2>
 
-          <p>Dear <strong>{dealer['name']}</strong>,</p>
+        <p>Dear <strong>{dealer['name']}</strong>,</p>
 
-          <p>The following certified letter has been returned for one of your active lien records:</p>
+        <p>The following certified letter has been returned for one of your active lien records:</p>
 
-          <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+        <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
             <tr style="background-color: #f0f0f0;">
-              <th style="padding: 8px; border: 1px solid #ddd;">VIN</th>
-              <th style="padding: 8px; border: 1px solid #ddd;">Certification</th>
-              <th style="padding: 8px; border: 1px solid #ddd;">Status</th>
+                <th style="padding: 8px; border: 1px solid #ddd;">VIN</th>
+                <th style="padding: 8px; border: 1px solid #ddd;">Certification</th>
+                <th style="padding: 8px; border: 1px solid #ddd;">Status</th>
             </tr>
             <tr>
-              <td style="padding: 8px; border: 1px solid #ddd;">{vin['vin']}</td>
-              <td style="padding: 8px; border: 1px solid #ddd;">cert{cert_number}</td>
-              <td style="padding: 8px; border: 1px solid #ddd;">{vin[status_field]}</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">{vin['vin']}</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">cert{cert_number}</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">{vin[status_field]}</td>
             </tr>
-          </table>
+        </table>
 
-          <p style="margin-top: 20px;">Please log in to your dashboard to take any required action.</p>
+        <p style="margin-top: 20px;">Please log in to your dashboard to take any required action.</p>
 
-          <p>Thank you,<br><strong>The Mechanic Lien Team</strong></p>
+        <p>Thank you,<br><strong>The Mechanic Lien Team</strong></p>
         </div>
-      </body>
+        </body>
     </html>
     """
 
@@ -1522,7 +1564,7 @@ def generate_130u_form(vin_data, file_path, pdf_template):
             'name': (50, 225),  # Dealer Name
             'combined_dealer_address': (50, 280),  # Combined Dealer Address
             'combined_dealer_name_city_state': (50, 305),  # Second Dealer Name + City + State
-            
+
             'associate1': (300, 730),
             'associate1tdl': (430, 158),
             'associate2': (300, 700)
@@ -1787,13 +1829,13 @@ import os
 
 def generate_popo_form(vin_data, file_path, pdf_template):
     """Generates the POPO form using the correct X, Y coordinates."""
-    
+
     # Ensure the template exists
     if not os.path.exists(pdf_template):
         flash(f"❌ Error: POPO template not found at {pdf_template}", "danger")
         print(f"❌ Error: POPO template not found at {pdf_template}")
         return
-    
+
     # Open the template PDF
     pdf_writer = fitz.open(pdf_template)
     page = pdf_writer[0]  # Use the first page
@@ -1838,7 +1880,7 @@ def generate_vtr34_form(vin_data, file_path, pdf_template):
         'make': (370, 405),
         'body': (450, 405),
         'model': (515, 405),
-       
+
     }
 
     # Insert data into the PDF
@@ -1864,7 +1906,7 @@ import os
 
 def generate_bonded_title_form(vin_data, file_path, pdf_template):
     """Generates the VTR-130-SOF (Bonded Title) form with correct X, Y coordinates."""
-    
+
     # Ensure the template exists
     if not os.path.exists(pdf_template):
         flash(f"❌ Error: VTR-130-SOF template not found at {pdf_template}", "danger")
@@ -1934,7 +1976,7 @@ import os
 
 def generate_vtr270_form(vin_data, file_path, pdf_template):
     """Generates the VTR-270 form using the correct X, Y coordinates."""
-    
+
     # Ensure the template exists
     if not os.path.exists(pdf_template):
         flash(f"❌ Error: VTR-270 template not found at {pdf_template}", "danger")
@@ -2000,7 +2042,7 @@ def generate_vtr270_form(vin_data, file_path, pdf_template):
 @app.route("/generate_mechanic_lien", methods=["GET", "POST"])
 def generate_mechanic_lien():
     """Generate a Mechanic Lien Letter separately."""
-    
+
     if "selected_vin" not in session:
         flash("⚠ Missing VIN data. Start over!", "danger")
         return redirect(url_for("search_vin"))
@@ -2008,7 +2050,7 @@ def generate_mechanic_lien():
     vin_data = session["selected_vin"]
     dealer_name = vin_data.get("dealer_name", "UnknownDealer").replace(" ", "_")
     vin = vin_data.get("vin", "UnknownVIN")
-    
+
     # Define file paths
     form_templates_dir = r"C:\Users\marka\Desktop\mechanic_lien_app\forms"
     file_name = f"{dealer_name}_{vin}_Mechanic_Lien.pdf"
@@ -2065,10 +2107,10 @@ def export_vin_records(last_4_vin, db_path, output_filename="vin_records.csv"):
 
         query = """
             SELECT vin, year, make, model, 
-                   owner, owner_address1, owner_address2,
-                   renewal, renewal_address1, renewal_address2,
-                   lein_holder, lein_holder_address1, lein_holder_address2,
-                   person_left, person_left_address1, person_left_address2
+                    owner, owner_address1, owner_address2,
+                    renewal, renewal_address1, renewal_address2,
+                    lein_holder, lein_holder_address1, lein_holder_address2,
+                    person_left, person_left_address1, person_left_address2
             FROM vins
             WHERE vin LIKE ?
         """
@@ -2124,7 +2166,7 @@ DB_PATH = os.path.join(os.path.dirname(__file__), "dealers_and_vins.db")
 @app.route("/export_vin/<string:last_4_vin>", methods=["GET"])
 def export_vin(last_4_vin):
 
-  #  db_path = r"C:\Users\marka\Desktop\dealers_and_vins.db"
+#  db_path = r"C:\Users\marka\Desktop\dealers_and_vins.db"
     output_filename = r"C:\Users\marka\Desktop\vin_records.csv"  # ✅ Always use the same file name
 
     """
@@ -2187,7 +2229,7 @@ def dashboard():
             FROM vins
             LEFT JOIN dealers ON vins.dealer_id = dealers.dealer_id
             WHERE vins.sale_date IS NULL 
-              AND (vins.lien_canceled IS NULL OR vins.lien_canceled = '' OR vins.lien_canceled = 'N/A')
+                AND (vins.lien_canceled IS NULL OR vins.lien_canceled = '' OR vins.lien_canceled = 'N/A')
             ORDER BY vins.date_notified DESC
         """)
     else:
@@ -2196,8 +2238,8 @@ def dashboard():
             FROM vins
             LEFT JOIN dealers ON vins.dealer_id = dealers.dealer_id
             WHERE vins.dealer_id = ?
-              AND vins.sale_date IS NULL 
-              AND (vins.lien_canceled IS NULL OR vins.lien_canceled = '' OR vins.lien_canceled = 'N/A')
+                AND vins.sale_date IS NULL 
+                AND (vins.lien_canceled IS NULL OR vins.lien_canceled = '' OR vins.lien_canceled = 'N/A')
             ORDER BY vins.date_notified DESC
         """, (dealer_id,))
     open_liens = cursor.fetchall()
@@ -2384,7 +2426,7 @@ def update_lien_status(vin):
 
         # ✅ Update lien status in the database
         cursor.execute("UPDATE vins SET status = ?, sale_date = ?, canceled = ? WHERE vin = ?",
-                       (new_status, sale_date, bool(canceled), vin))
+                        (new_status, sale_date, bool(canceled), vin))
         conn.commit()
         flash(f"✅ Lien status updated to {new_status}!", "success")
     except sqlite3.Error as e:
@@ -2466,13 +2508,13 @@ def lien_summary_report():
     conn.close()
 
     return render_template("lien_summary.html",
-                           total_liens=total_liens,
-                           liens_by_status=status_counts.items(),
-                           in_process_liens=in_process_liens,
-                           completed_liens=completed_liens,
-                           canceled_liens=canceled_liens,
-                           liens_last_30_days=liens_last_30_days,
-                           liens_completed_last_30_days=liens_completed_last_30_days)
+                            total_liens=total_liens,
+                            liens_by_status=status_counts.items(),
+                            in_process_liens=in_process_liens,
+                            completed_liens=completed_liens,
+                            canceled_liens=canceled_liens,
+                            liens_last_30_days=liens_last_30_days,
+                            liens_completed_last_30_days=liens_completed_last_30_days)
 
 
 @app.route("/report/dealer_performance")
@@ -2506,7 +2548,7 @@ def pending_actions_report():
     # Fetch all pending liens (where sale_date is NULL)
     cursor.execute("""
         SELECT vins.vin, vins.year, vins.make, vins.model, vins.date_notified, 
-               dealers.name AS dealer_name, dealers.dealer_id
+                dealers.name AS dealer_name, dealers.dealer_id
         FROM vins
         JOIN dealers ON vins.dealer_id = dealers.dealer_id
         WHERE vins.sale_date IS NULL
@@ -2556,15 +2598,15 @@ def certified_letter_tracking_report():
     # ✅ Fetch all necessary data including Owner, Renewal, Lien Holder, and Person Left
     cursor.execute("""
         SELECT vin, owner, renewal, lein_holder, person_left, date_notified, status, 
-               cert1, cert1_status, cert2, cert2_status, cert3, cert3_status, 
-               cert4, cert4_status, cert5, cert5_status, cert6, cert6_status
+                cert1, cert1_status, cert2, cert2_status, cert3, cert3_status, 
+                cert4, cert4_status, cert5, cert5_status, cert6, cert6_status
         FROM vins
         ORDER BY vin ASC
     """)
     raw_certified_letters = cursor.fetchall()
 
     certified_letters = []
-    
+
     for row in raw_certified_letters:
         cert_details = []  # Stores certification numbers & statuses
         sent_status = False  # Tracks if at least one cert was sent
@@ -2902,7 +2944,7 @@ import stripe
 def pricing_select_plan():
     if request.method == "POST":
         selected_plan = request.form.get('plan')
-        
+
         if selected_plan:
             # Save the selected plan (you can store it in the session or database)
             session['selected_plan'] = selected_plan
@@ -3080,7 +3122,7 @@ def stripe_webhook():
 
 from flask import request
 
-  # Keep this in environment variables ideally
+# Keep this in environment variables ideally
 endpoint_secret = "your_webhook_secret"  # Keep this in environment variables
 
 
@@ -3132,12 +3174,12 @@ def send_low_credit_email(dealer_name, recipient_email):
     message = f"""
     <html>
     <body style="font-family: Arial, sans-serif; color: #333;">
-      <div style="max-width: 600px; margin: auto; border: 1px solid #ccc; padding: 25px; border-radius: 8px;">
+        <div style="max-width: 600px; margin: auto; border: 1px solid #ccc; padding: 25px; border-radius: 8px;">
         <h2 style="color: #0056b3;">⚠️ You're Almost Out of Lien Credits</h2>
         <p>Hi <strong>{dealer_name}</strong>,</p>
         <p>We noticed you're down to <strong>1 lien credit</strong> in your account. To avoid interruptions, consider topping up now.</p>
         <p style="text-align: center; margin: 30px 0;">
-          <a href="http://localhost:5000/pricing" style="
+        <a href="http://localhost:5000/pricing" style="
             background-color: #28a745;
             color: white;
             padding: 12px 24px;
@@ -3149,7 +3191,7 @@ def send_low_credit_email(dealer_name, recipient_email):
         <p>– The My Title Guy Team</p>
         <hr>
         <small>This is an automated message. Please do not reply directly.</small>
-      </div>
+        </div>
     </body>
     </html>
     """
@@ -3665,32 +3707,32 @@ def test_cert_returned(vin_id, cert_number):
     subject = f"📬 Certified Letter Returned - VIN {vin['vin']}"
     body = f"""
     <html>
-      <body style="font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px;">
+        <body style="font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px;">
         <div style="max-width: 600px; margin: auto; background-color: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
-          <h2 style="background-color: #dc3545; color: white; padding: 10px; border-radius: 5px; text-align: center;">📬 Certified Letter Returned</h2>
+        <h2 style="background-color: #dc3545; color: white; padding: 10px; border-radius: 5px; text-align: center;">📬 Certified Letter Returned</h2>
 
-          <p>Dear <strong>{dealer['name']}</strong>,</p>
+        <p>Dear <strong>{dealer['name']}</strong>,</p>
 
-          <p>The following certified letter has been returned for one of your active lien records:</p>
+        <p>The following certified letter has been returned for one of your active lien records:</p>
 
-          <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+        <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
             <tr style="background-color: #f0f0f0;">
-              <th style="padding: 8px; border: 1px solid #ddd;">VIN</th>
-              <th style="padding: 8px; border: 1px solid #ddd;">Certification</th>
-              <th style="padding: 8px; border: 1px solid #ddd;">Status</th>
+                <th style="padding: 8px; border: 1px solid #ddd;">VIN</th>
+                <th style="padding: 8px; border: 1px solid #ddd;">Certification</th>
+                <th style="padding: 8px; border: 1px solid #ddd;">Status</th>
             </tr>
             <tr>
-              <td style="padding: 8px; border: 1px solid #ddd;">{vin['vin']}</td>
-              <td style="padding: 8px; border: 1px solid #ddd;">cert{cert_number}</td>
-              <td style="padding: 8px; border: 1px solid #ddd;">{vin[status_field]}</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">{vin['vin']}</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">cert{cert_number}</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">{vin[status_field]}</td>
             </tr>
-          </table>
+        </table>
 
-          <p style="margin-top: 20px;">Please log in to your dashboard to take any required action.</p>
+        <p style="margin-top: 20px;">Please log in to your dashboard to take any required action.</p>
 
-          <p>Thank you,<br><strong>The Mechanic Lien Team</strong></p>
+        <p>Thank you,<br><strong>The Mechanic Lien Team</strong></p>
         </div>
-      </body>
+        </body>
     </html>
     """
 
