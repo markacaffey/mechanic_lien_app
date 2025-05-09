@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Dealer{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow p-4">
+        <h2 class="text-primary text-center">Edit Dealer</h2>
+
+        <form method="POST" class="mt-4">
+            <div class="form-group">
+                <label for="name">Dealer Name</label>
+                <input type="text" id="name" name="name" class="form-control" value="{{ dealer.name }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="pnumber">PNumber</label>
+                <input type="text" id="pnumber" name="pnumber" class="form-control" value="{{ dealer.pnumber or '' }}">
+            </div>
+
+            <div class="form-group">
+                <label for="address">Address</label>
+                <input type="text" id="address" name="address" class="form-control" value="{{ dealer.address }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="city">City</label>
+                <input type="text" id="city" name="city" class="form-control" value="{{ dealer.city }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="state">State</label>
+                <input type="text" id="state" name="state" class="form-control" value="{{ dealer.state }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="zip">Zip Code</label>
+                <input type="text" id="zip" name="zip" class="form-control" value="{{ dealer.zip }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Phone</label>
+                <input type="text" id="phone" name="phone" class="form-control" value="{{ dealer.phone }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" class="form-control" value="{{ dealer.email or '' }}">
+            </div>
+
+            <div class="form-group">
+                <label for="email2">Email 2</label>
+                <input type="email" id="email2" name="email2" class="form-control" value="{{ dealer.email2 or '' }}">
+            </div>
+
+            <div class="form-group">
+                <label for="associate1">Associate 1</label>
+                <input type="text" id="associate1" name="associate1" class="form-control" value="{{ dealer.associate1 or '' }}">
+            </div>
+
+            <div class="form-group">
+                <label for="associate1tdl">Associate 1 TDL</label>
+                <input type="text" id="associate1tdl" name="associate1tdl" class="form-control" value="{{ dealer.associate1tdl or '' }}">
+            </div>
+
+            <div class="form-group">
+                <label for="associate2">Associate 2</label>
+                <input type="text" id="associate2" name="associate2" class="form-control" value="{{ dealer.associate2 or '' }}">
+            </div>
+
+            <div class="form-group">
+                <label for="associate2cell">Associate 2 Cell</label>
+                <input type="text" id="associate2cell" name="associate2cell" class="form-control" value="{{ dealer.associate2cell or '' }}">
+            </div>
+
+            <div class="form-group">
+                <label for="expdate">Expiration Date</label>
+                <input type="date" id="expdate" name="expdate" class="form-control" value="{{ dealer.expdate or '' }}">
+            </div>
+
+            <button type="submit" class="btn btn-success btn-block">Update Dealer</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

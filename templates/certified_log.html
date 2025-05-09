@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Certified Tracking Log{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="text-center mb-4">📜 Certified Tracking Log</h1>
+
+    <div class="mb-3">
+        <input type="text" id="searchInput" class="form-control" placeholder="🔎 Search VIN, Cert #, Status, Dealer ID...">
+    </div>
+
+    <table class="table table-striped table-bordered" id="certTable">
+        <thead class="table-dark">
+            <tr>
+                <th>VIN</th>
+                <th>Year</th>
+                <th>Make</th>
+                <th>Model</th>
+                <th>Certified #</th>
+                <th>Status</th>
+                <th>Dealer ID</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in vin_data_list %}
+            <tr>
+                <td>{{ entry.vin }}</td>
+                <td>{{ entry.year }}</td>
+                <td>{{ entry.make }}</td>
+                <td>{{ entry.model }}</td>
+                <td>{{ entry.cert }}</td>
+                <td>{{ entry.status }}</td>
+                <td>{{ entry.dealer_id }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+document.getElementById('searchInput').addEventListener('keyup', function() {
+    let input = this.value.toLowerCase();
+    let rows = document.querySelectorAll("#certTable tbody tr");
+
+    rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(input) ? "" : "none";
+    });
+});
+</script>
+{% endblock %}

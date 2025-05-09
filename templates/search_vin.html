@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Search VIN{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="text-center text-primary">🔍 Search for a VIN</h1>
+
+    <!-- 🚗 Search Form -->
+    <div class="card shadow-sm p-4 mt-4">
+        <form method="POST" class="row g-3">
+            <div class="col-md-6 mx-auto">
+                <label class="form-label fw-bold">Enter Last 4 Digits of VIN:</label>
+                <input type="text" class="form-control form-control-lg" name="last_4_vin" placeholder="e.g. 1234" required>
+            </div>
+            <div class="col-12 text-center">
+                <button type="submit" class="btn btn-primary btn-lg mt-2">🔎 Search</button>
+            </div>
+        </form>
+    </div>
+
+    <hr class="my-4">
+
+    <!-- 📋 Display Results -->
+    {% if vins %}
+    <h2 class="text-center mt-4 text-success">✅ Matching VINs Found</h2>
+    <div class="table-responsive">
+        <table class="table table-striped table-hover mt-3">
+            <thead class="table-dark">
+                <tr>
+                    <th>VIN</th>
+                    <th>Year</th>
+                    <th>Make</th>
+                    <th>Model</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for vin in vins %}
+                <tr>
+                    <td>{{ vin.vin }}</td>
+                    <td>{{ vin.year }}</td>
+                    <td>{{ vin.make }}</td>
+                    <td>{{ vin.model }}</td>
+                    <td class="text-center">
+                        <!-- Select VIN -->
+                        <a href="{{ url_for('select_vin', vin_id=vin.vin_id) }}" class="btn btn-success btn-sm">✔ Select</a>
+
+                        <!-- Edit VIN -->
+                        <a href="{{ url_for('edit_vin', vin_id=vin.vin_id) }}" class="btn btn-warning btn-sm">✏ Edit</a>
+
+                        <!-- Export VIN Records -->
+                        <form action="{{ url_for('export_vin', last_4_vin=vin.vin[-4:]) }}" method="get" class="d-inline">
+                            <button type="submit" class="btn btn-secondary btn-sm">📤 Export VIN</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center mt-4">
+        🔎 No results found. Try a different search.
+    </div>
+    {% endif %}
+
+    <div class="text-center mt-4">
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">⬅ Back to Main Menu</a>
+    </div>
+
+</div>
+{% endblock %}

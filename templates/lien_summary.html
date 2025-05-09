@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}📊 Lien Summary Report{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="text-center text-primary">📊 Lien Summary Report</h1>
+    
+    <!-- 📌 Quick Stats -->
+    <div class="row text-center">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5>Total Liens</h5>
+                    <h3>{{ total_liens }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <h5>Liens in Last 30 Days</h5>
+                    <h3>{{ liens_last_30_days }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5>Completed in Last 30 Days</h5>
+                    <h3>{{ liens_completed_last_30_days }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🔍 Lien Status Breakdown -->
+    <h2 class="mt-4">🔹 Lien Status Breakdown</h2>
+    <div class="row text-center">
+        <div class="col-md-4">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5>In-Process Liens</h5>
+                    <h3>{{ in_process_liens }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5>Completed Liens</h5>
+                    <h3>{{ completed_liens }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <h5>Canceled Liens</h5>
+                    <h3>{{ canceled_liens }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📅 Breakdown by Status -->
+    <h2 class="mt-4">📌 Liens by Status</h2>
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>Status</th>
+                <th>Count</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for status, count in liens_by_status %}
+            <tr>
+                <td>{{ status }}</td>
+                <td>{{ count }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

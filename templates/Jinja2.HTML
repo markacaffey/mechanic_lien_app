@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}📬 Certified Letter Tracking Report{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="text-center text-primary fw-bold">📬 Certified Letter Tracking Report</h1>
+
+    <div class="row g-3" id="letterCards">
+        {% if certified_letters %}
+            {% for letter in certified_letters %}
+            <div class="col-md-4 letter-card">
+                <div class="card border-secondary shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title text-dark fw-bold">📌 VIN: {{ letter.vin or 'N/A' }}</h5>
+                        <p class="card-text"><strong>Owner:</strong> {{ letter.owner or 'N/A' }}</p>
+
+                        <!-- Sent Status -->
+                        <p class="card-text">
+                            <strong>Letter Sent:</strong>
+                            <span class="badge {% if letter.sent == 'Yes' %} bg-primary {% else %} bg-secondary {% endif %}">
+                                {{ letter.sent }}
+                            </span>
+                        </p>
+
+                        <!-- Sent Date -->
+                        <p class="card-text">
+                            <strong>Sent Date:</strong>
+                            <span class="text-dark">
+                                {{ letter.sent_date }}
+                            </span>
+                        </p>
+
+                        <!-- Letter Status -->
+                        <p class="card-text">
+                            <strong>Status:</strong>
+                            <span class="badge 
+                                {% if letter.status == 'Delivered' %} bg-success 
+                                {% elif letter.status == 'In Transit' %} bg-info 
+                                {% else %} bg-warning text-dark {% endif %}">
+                                {{ letter.status }}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <p class="text-center text-muted">🚫 No certified letters found.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

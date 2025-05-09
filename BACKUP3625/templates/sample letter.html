@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mechanic Lien Notice</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { font-size: 14px; }
+        .container { max-width: 800px; margin: auto; padding: 20px; border: 1px solid #000; }
+        .table td, .table th { padding: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h3 class="text-center">NOTICE OF INTENT TO FILE A MECHANIC LIEN</h3>
+        <p><strong>Date:</strong> <span id="date"></span></p>
+        
+        <h5>Dealer Information</h5>
+        <p><strong id="dealer-name"></strong><br><span id="dealer-address"></span></p>
+        
+        <h5>Vehicle Details</h5>
+        <table class="table table-bordered">
+            <tr><th>VIN</th><td id="vin"></td></tr>
+            <tr><th>Year/Make</th><td><span id="year"></span> / <span id="make"></span></td></tr>
+            <tr><th>Model</th><td id="model"></td></tr>
+            <tr><th>Color</th><td id="color"></td></tr>
+            <tr><th>Plate</th><td id="plate"></td></tr>
+            <tr><th>Amount Due</th><td>$<span id="repair-amount"></span></td></tr>
+        </table>
+        
+        <h5>Certified Letters</h5>
+        <ul id="certified-letters"></ul>
+        
+        <h5>Owner & Lien Holder Information</h5>
+        <table class="table table-bordered">
+            <tr><th>Registered Owner</th><td><span id="owner-name"></span><br><span id="owner-address"></span></td></tr>
+            <tr><th>Renewal</th><td><span id="renewal-name"></span><br><span id="renewal-address"></span></td></tr>
+            <tr><th>Lien Holder</th><td><span id="lien-name"></span><br><span id="lien-address"></span></td></tr>
+            <tr><th>Person Who Left Vehicle</th><td><span id="person-left-name"></span><br><span id="person-left-address"></span></td></tr>
+        </table>
+        
+        <p>According to section 70 of the Texas Property Code, we are requesting that you make full payment for the repairs made on the vehicle described above. These repairs were done as authorized and shown on the attached work order.</p>
+        
+        <p>Reasonable efforts will be made to accommodate inspection of the vehicle during normal business hours of 8:00 am to 5:00 pm at:</p>
+        <p><strong id="dealer-name-2"></strong><br><span id="dealer-address-2"></span></p>
+        
+        <p><strong>You have 31 days from the date of this letter to redeem this vehicle or it will be sold at public auction.</strong></p>
+        
+        <p>These are the total charges due. No other amount may be charged or quoted by any representative of the mechanic shop.</p>
+    </div>
+
+    <script>
+        document.getElementById('date').textContent = new Date().toLocaleDateString();
+        document.getElementById('dealer-name').textContent = "Sample Dealer";
+        document.getElementById('dealer-address').textContent = "1234 Sample St, City, State, ZIP";
+        document.getElementById('vin').textContent = "1HGBH41JXMN109186";
+        document.getElementById('year').textContent = "2020";
+        document.getElementById('make').textContent = "Toyota";
+        document.getElementById('model').textContent = "Camry";
+        document.getElementById('color').textContent = "Blue";
+        document.getElementById('plate').textContent = "XYZ-1234";
+        document.getElementById('repair-amount').textContent = "1500.00";
+        
+        let letters = ["Certified Letter 1", "Certified Letter 2", "Certified Letter 3"];
+        let lettersList = document.getElementById('certified-letters');
+        letters.forEach(letter => {
+            let li = document.createElement('li');
+            li.textContent = letter;
+            lettersList.appendChild(li);
+        });
+
+        document.getElementById('owner-name').textContent = "John Doe";
+        document.getElementById('owner-address').textContent = "5678 Owner St, City, State, ZIP";
+        document.getElementById('renewal-name').textContent = "Renewal Name";
+        document.getElementById('renewal-address').textContent = "Renewal Address";
+        document.getElementById('lien-name').textContent = "Lien Holder Name";
+        document.getElementById('lien-address').textContent = "Lien Address";
+        document.getElementById('person-left-name').textContent = "James Smith";
+        document.getElementById('person-left-address').textContent = "6789 Repair St, City, State, ZIP";
+    </script>
+</body>
+</html>

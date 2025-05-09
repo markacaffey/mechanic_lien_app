@@ -1,0 +1,29 @@
+<html>
+<head>
+    <style>
+        body { font-family: 'Arial', sans-serif; margin: 0; padding: 20px; background-color: #f3f4f6; }
+        .container { background: #fff; padding: 25px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+        .header { background: #28a745; color: #fff; padding: 10px; font-size: 20px; text-align: center; border-radius: 10px 10px 0 0; }
+        h2 { color: #333; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background: #28a745; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">🚗 Vehicle Lien Status Update</div>
+        <p>Dear {dealer_name},</p>
+        <p>Your vehicle's lien status has been updated.</p>
+        <table>
+            <tr><th>VIN</th><td>{selected_vin_data['vin']}</td></tr>
+            <tr><th>Year</th><td>{selected_vin_data['year']}</td></tr>
+            <tr><th>Make</th><td>{selected_vin_data['make']}</td></tr>
+            <tr><th>Model</th><td>{selected_vin_data['model']}</td></tr>
+            <tr><th>Status</th><td><strong>{selected_vin_data['cert_status']}</strong></td></tr>
+        </table>
+        <p>If you have any questions, please contact us.</p>
+        <p>Best Regards,<br><strong>The Mechanic Lien Team</strong></p>
+    </div>
+</body>
+</html>

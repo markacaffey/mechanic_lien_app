@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Edit VIN Record</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container mt-4">
+
+    <h2 class="text-center mb-4">✏️ Edit VIN Record</h2>
+
+    <form method="POST" class="row g-2">
+
+        <!-- 🚗 Vehicle Information -->
+        <div class="col-12">
+            <h4 class="bg-primary text-white p-2">🚗 Vehicle Information</h4>
+        </div>
+        <div class="col-md-3"><label>VIN</label><input type="text" class="form-control form-control-sm" name="vin" value="{{ vin.vin }}" required></div>
+        <div class="col-md-2"><label>Year</label><input type="text" class="form-control form-control-sm" name="year" value="{{ vin.year }}" required></div>
+        <div class="col-md-2"><label>Make</label><input type="text" class="form-control form-control-sm" name="make" value="{{ vin.make }}" required></div>
+        <div class="col-md-2"><label>Model</label><input type="text" class="form-control form-control-sm" name="model" value="{{ vin.model }}" required></div>
+        <div class="col-md-3"><label>Body</label><input type="text" class="form-control form-control-sm" name="body" value="{{ vin.body }}"></div>
+        
+        <div class="col-md-2"><label>Color</label><input type="text" class="form-control form-control-sm" name="color" value="{{ vin.color }}"></div>
+        <div class="col-md-2"><label>Plate</label><input type="text" class="form-control form-control-sm" name="plate" value="{{ vin.plate }}"></div>
+        <div class="col-md-2"><label>Weight</label><input type="text" class="form-control form-control-sm" name="weight" value="{{ vin.weight }}"></div>
+        <div class="col-md-2"><label>Carrying Weight</label><input type="text" class="form-control form-control-sm" name="cweight" value="{{ vin.cweight }}"></div>
+        <div class="col-md-2"><label>Odometer</label><input type="text" class="form-control form-control-sm" name="odometer" value="{{ vin.odometer }}"></div>
+
+        <!-- 🛠️ Repair & Status Details -->
+        <div class="col-12">
+            <h4 class="bg-info text-white p-2">🛠️ Repair & Status Details</h4>
+        </div>
+        <div class="col-md-3"><label>Repair Amount ($)</label><input type="number" class="form-control form-control-sm" name="repair_amount" value="{{ vin.repair_amount }}"></div>
+        <div class="col-md-3"><label>Ready to Title</label><input type="text" class="form-control form-control-sm" name="ready_to_title" value="{{ vin.ready_to_title }}"></div>
+        <div class="col-md-3"><label>Status Downtown</label><input type="text" class="form-control form-control-sm" name="status_downtown" value="{{ vin.status_downtown }}"></div>
+        <div class="col-md-3"><label>Date Sent Downtown</label><input type="date" class="form-control form-control-sm" name="date_sent_downtown" value="{{ vin.date_sent_downtown }}"></div>
+        <div class="col-md-3"><label>Lien Canceled</label><input type="text" class="form-control form-control-sm" name="lien_canceled" value="{{ vin.lien_canceled }}"></div>
+        <div class="col-md-3"><label>Date Canceled</label><input type="date" class="form-control form-control-sm" name="date_canceled" value="{{ vin.date_canceled }}"></div>
+        <div class="col-md-3"><label>Transferred to Harris County</label><input type="text" class="form-control form-control-sm" name="transferred_harris_county" value="{{ vin.transferred_harris_county }}"></div>
+
+        <!-- 📅 Important Dates -->
+        <div class="col-12">
+            <h4 class="bg-secondary text-white p-2">📅 Important Dates</h4>
+        </div>
+        <div class="col-md-3"><label>Date Left</label><input type="date" class="form-control form-control-sm" name="date_left" value="{{ vin.date_left }}"></div>
+        <div class="col-md-3"><label>Date Completed</label><input type="date" class="form-control form-control-sm" name="date_completed" value="{{ vin.date_completed }}"></div>
+        <div class="col-md-3"><label>Date Notified</label><input type="date" class="form-control form-control-sm" name="date_notified" value="{{ vin.date_notified }}"></div>
+        <div class="col-md-3"><label>Sale Date</label><input type="date" class="form-control form-control-sm" name="sale_date" value="{{ vin.sale_date }}"></div>
+
+        <!-- 🔘 Submit -->
+        <div class="col-12 text-center mt-3">
+            <button type="submit" class="btn btn-primary">💾 Save Changes</button>
+            <a href="{{ url_for('search_vin') }}" class="btn btn-secondary">❌ Cancel</a>
+        </div>
+
+    </form>
+
+</body>
+</html>

@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block title %}📊 Mechanic Lien Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="text-center text-primary fw-bold">📊 Mechanic Lien Dashboard</h1>
+
+    <!-- 📌 Quick Stats Section -->
+    <div class="row g-3 mt-3">
+    <!-- 👤 User Info & Logout + Tracking Log Button -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <span class="me-3">👤 {{ session.get('username') }}</span>
+            <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm">🔓 Logout</a>
+        </div>
+        <div>
+            {% if session.get('role') == 'admin' %}
+                <a href="{{ url_for('certified_log') }}" class="btn btn-outline-secondary btn-sm">📜 Certified Tracking Log</a>
+                <a href="{{ url_for('admin_logs') }}" class="btn btn-outline-info btn-sm ms-2">🗂 View Admin Logs</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 🎯 Action Buttons -->
+    <div class="d-flex justify-content-between align-items-center mt-3 mb-3">
+        <form method="get" class="d-flex align-items-center">
+            <label class="me-2 fw-bold" for="status_filter">Filter:</label>
+            <select name="status_filter" id="status_filter" class="form-select me-2" onchange="this.form.submit()">
+                <option value="All" {% if status_filter == 'All' %}selected{% endif %}>All</option>
+                <option value="In Process" {% if status_filter == 'In Process' %}selected{% endif %}>In Process</option>
+                <option value="Finished" {% if status_filter == 'Finished' %}selected{% endif %}>Finished</option>
+                <option value="Canceled" {% if status_filter == 'Canceled' %}selected{% endif %}>Canceled</option>
+            </select>
+        </form>
+
+        <div>
+            {% if session.get("role") == "dealer" %}
+                <a href="{{ url_for('add_vin', dealer_id=session.get('dealer_id')) }}" class="btn btn-success me-2">➕ Add New Lien</a>
+            {% endif %}
+            <a href="{{ url_for('export_vin', last_4_vin='') }}" class="btn btn-outline-secondary">📤 Export All VINs</a>
+        </div>
+    </div>
+
+    {% if session.get("role") == "dealer" %}
+    <div class="alert alert-info d-flex justify-content-between align-items-center">
+        <div>
+            💳 <strong>Credit Balance:</strong> {{ available_credits }}
+        </div>
+        <div>
+            <a href="{{ url_for('buy_extra_credit') }}" class="btn btn-primary btn-sm">
+                ➕ Buy Extra Credit
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 📌 Quick Stats -->
+    <div class="row text-center mb-4">
+        <div class="col-md-3">
+            <div class="card border-primary shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="text-primary fw-bold">Total Liens</h5>
+                    <h3 class="fw-bold">{{ total_liens }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-warning shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="text-warning fw-bold">Open Liens</h5>
+                    <h3 class="fw-bold">{{ open_liens|length }}</h3>
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <h5>Canceled Liens</h5>
+                    <h3>{{ liens_canceled }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-info shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="text-info fw-bold">Liens In Process</h5>
+                    <h3 class="fw-bold">{{ liens_in_process }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-success shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="text-success fw-bold">Completed Liens</h5>
+                    <h3 class="fw-bold">{{ liens_finished }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🔍 Open Liens Table -->
+    <div class="mt-5">
+        <h2 class="fw-bold text-dark">🔹 Open Liens</h2>
+        <div class="table-responsive">
+            <table class="table table-striped table-hover shadow-sm">
+                <thead class="table-dark">
+                    <tr>
+                        <th>VIN</th>
+                        <th>Year</th>
+                        <th>Make</th>
+                        <th>Model</th>
+                        <th>Dealer</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for vin in open_liens %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('view_vin', vin_id=vin.vin) }}" class="text-primary fw-bold text-decoration-none">
+                                {{ vin.vin }}
+                            </a>
+                        </td>
+                        <td>{{ vin.year }}</td>
+                        <td>{{ vin.make }}</td>
+                        <td>{{ vin.model }}</td>
+                        <td>
+                            <a href="{{ url_for('view_dealer', dealer_id=vin.dealer_id) }}" class="text-decoration-none">
+                                {{ vin.dealer_name }}
+                            </a>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('edit_vin', vin_id=vin.vin) }}" class="btn btn-warning btn-sm">✏ Edit</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 🕒 Recently Added Liens with Status Filter -->
+    <div class="mt-5">
+        <h2 class="fw-bold text-dark">🕒 Recently Added Liens</h2>
+
+        <!-- Status Filter Dropdown -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <label for="filterStatus" class="fw-bold">Filter by Status:</label>
+            <select id="filterStatus" class="form-select w-auto">
+                <option value="">All</option>
+                <option value="In Process" {% if request.args.get('status') == 'In Process' %}selected{% endif %}>In Process</option>
+                <option value="Completed" {% if request.args.get('status') == 'Completed' %}selected{% endif %}>Completed</option>
+                <option value="Canceled" {% if request.args.get('status') == 'Canceled' %}selected{% endif %}>Canceled</option>
+            </select>
+        </div>
+
+        <script>
+            document.getElementById("filterStatus").addEventListener("change", function() {
+                const selectedStatus = this.value;
+                window.location.href = "{{ url_for('dashboard') }}?status=" + selectedStatus;
+            });
+        </script>
+
+        <div class="table-responsive">
+            <table class="table table-hover shadow-sm">
+                <thead class="table-secondary">
+                    <tr>
+                        <th>VIN</th>
+                        <th>Year</th>
+                        <th>Make</th>
+                        <th>Model</th>
+                        <th>Dealer</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for vin in recent_liens %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('view_vin', vin_id=vin.vin) }}" class="text-primary fw-bold text-decoration-none">
+                                {{ vin.vin }}
+                            </a>
+                        </td>
+                        <td>{{ vin.year }}</td>
+                        <td>{{ vin.make }}</td>
+                        <td>{{ vin.model }}</td>
+                        <td>
+                            <a href="{{ url_for('edit_dealer', dealer_id=vin.dealer_id) }}" class="text-decoration-none">
+                                {{ vin.dealer_name }}
+                            </a>
+                        </td>
+                        <td>{{ vin.status }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!-- 🕒 Recently Added Liens -->
+    <h2 class="mt-4">🔎 Filtered Liens</h2>
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>VIN</th>
+                <th>Year</th>
+                <th>Make</th>
+                <th>Model</th>
+                <th>Dealer</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for vin in filtered_liens %}
+            <tr>
+                <td>
+                    <a href="{{ url_for('edit_vin', vin_id=vin.vin) }}" class="text-primary fw-bold text-decoration-none">
+                        {{ vin.vin }}
+                    </a>
+                </td>
+                <td>{{ vin.year }}</td>
+                <td>{{ vin.make }}</td>
+                <td>{{ vin.model }}</td>
+                <td>
+                    <a href="{{ url_for('view_dealer', dealer_id=vin.dealer_id) }}" class="text-decoration-none">
+                        {{ vin.dealer_name }}
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

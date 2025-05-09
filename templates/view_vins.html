@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View VINs</title>
+</head>
+<body>
+    <h1>VINs for Dealer ID: {{ dealer_id }}</h1>
+    <table border="1">
+        <tr>
+            <th>VIN</th>
+            <th>Year</th>
+            <th>Make</th>
+            <th>Model</th>
+            <th>Color</th>
+            <!-- Add more fields if necessary -->
+        </tr>
+        {% for vin in vins %}
+        <tr>
+            <td>{{ vin['vin'] }}</td>
+            <td>{{ vin['year'] }}</td>
+            <td>{{ vin['make'] }}</td>
+            <td>{{ vin['model'] }}</td>
+            <td>{{ vin['color'] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <a href="{{ url_for('view_dealers') }}">Back to Dealers</a>
+</body>
+</html>

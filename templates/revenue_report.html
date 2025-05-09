@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}💰 Revenue Report{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="text-center text-success">💰 Revenue Report</h1>
+
+    <!-- Revenue Summary Cards -->
+    <div class="row text-center g-3">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white shadow">
+                <div class="card-body">
+                    <h5>Total Revenue</h5>
+                    <h3>${{ revenue_data.total_revenue | round(2) }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-warning text-dark shadow">
+                <div class="card-body">
+                    <h5>Revenue Last 30 Days</h5>
+                    <h3>${{ revenue_data.revenue_last_30_days | round(2) }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-info text-white shadow">
+                <div class="card-body">
+                    <h5>Pending Payments</h5>
+                    <h3>${{ revenue_data.pending_payments | round(2) }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Revenue Breakdown Table -->
+    <div class="card mt-4 shadow">
+        <div class="card-header bg-success text-white">
+            <h4>📅 Revenue Breakdown</h4>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Date</th>
+                            <th>VIN</th>
+                            <th>Amount ($)</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for revenue in revenue_data.revenue_entries %}
+                        <tr>
+                            <td>{{ revenue.date }}</td>
+                            <td>{{ revenue.vin }}</td>
+                            <td>${{ revenue.amount | round(2) }}</td>
+                            <td>
+                                <span class="badge {% if revenue.status == 'Paid' %}bg-success{% elif revenue.status == 'Pending' %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                                    {{ revenue.status }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

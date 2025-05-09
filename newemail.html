@@ -1,0 +1,50 @@
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #eef1f7; }
+        .container { background: #fff; padding: 25px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+        .header { background: #0056b3; color: #fff; text-align: center; padding: 15px; font-size: 20px; border-radius: 10px 10px 0 0; }
+        h2, h3 { color: #333; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background: #0056b3; color: #fff; }
+        .section-title { background: #0056b3; color: white; padding: 10px; font-size: 18px; margin-top: 20px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">🚗 Mechanic Lien Update</div>
+        
+        <p>Dear {dealer_name},</p>
+        <p>The mechanic lien process has been updated for the following vehicle:</p>
+        
+        <!-- Vehicle Information -->
+        <div class="section-title">🔹 Vehicle Information</div>
+        <table>
+            <tr><th>VIN</th><td>{selected_vin_data['vin']}</td></tr>
+            <tr><th>Year</th><td>{selected_vin_data['year']}</td></tr>
+            <tr><th>Make</th><td>{selected_vin_data['make']}</td></tr>
+            <tr><th>Model</th><td>{selected_vin_data['model']}</td></tr>
+        </table>
+
+        <!-- Ownership Details -->
+        <div class="section-title">📝 Ownership & Lien Details</div>
+        <table>
+            <tr><th>Owner</th><td>{selected_vin_data['owner']}</td></tr>
+            <tr><th>Renewal Date</th><td>{selected_vin_data['renewal']}</td></tr>
+            <tr><th>Lien Holder</th><td>{selected_vin_data['lein_holder']}</td></tr>
+            <tr><th>Person Who Left Vehicle</th><td>{selected_vin_data['person_left']}</td></tr>
+        </table>
+
+        <!-- Certified Letter Tracking -->
+        <div class="section-title">📨 Certified Letters & Status</div>
+        <table>
+            <tr><th>Certification</th><th>Tracking Number</th><th>Status</th></tr>
+            {cert_table_rows}
+        </table>
+
+        <p>If you have any questions, please contact us.</p>
+        <p><strong>Best Regards,</strong><br>The Mechanic Lien Team at My Title Guy</p>
+    </div>
+</body>
+</html>

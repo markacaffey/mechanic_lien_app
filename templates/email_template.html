@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{{ subject }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            padding-bottom: 20px;
+        }
+        .header img {
+            max-width: 150px;
+        }
+        .content {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #333;
+        }
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            margin-top: 20px;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="{{ logo_url }}" alt="Dealer Logo">
+            <h2>{{ subject }}</h2>
+        </div>
+        <div class="content">
+            <p>Dear {{ dealer_name }},</p>
+            <p>{{ message_body }}</p>
+            <h4>Vehicle Details:</h4>
+            <ul>
+                <li><strong>VIN:</strong> {{ vin }}</li>
+                <li><strong>Year:</strong> {{ year }}</li>
+                <li><strong>Make:</strong> {{ make }}</li>
+                <li><strong>Model:</strong> {{ model }}</li>
+                <li><strong>Owner:</strong> {{ owner }}</li>
+                <li><strong>Person Left:</strong> {{ person_left }}</li>
+                <li><strong>Lien Holder:</strong> {{ lien_holder }}</li>
+            </ul>
+            <h4>Certification Status:</h4>
+            <ul>
+                <li><strong>Cert 1:</strong> {{ cert1_status }}</li>
+                <li><strong>Cert 2:</strong> {{ cert2_status }}</li>
+                <li><strong>Cert 3:</strong> {{ cert3_status }}</li>
+                <li><strong>Cert 4:</strong> {{ cert4_status }}</li>
+                <li><strong>Cert 5:</strong> {{ cert5_status }}</li>
+                <li><strong>Cert 6:</strong> {{ cert6_status }}</li>
+            </ul>
+            <p>For more details, please log into your account.</p>
+        </div>
+        <div class="footer">
+            <p>© {{ year_now }} {{ dealer_name }}. All Rights Reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

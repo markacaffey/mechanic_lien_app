@@ -1,0 +1,56 @@
+<html>
+<head>
+  <style>
+    body { font-family: Arial, sans-serif; background-color: #f8f9fa; margin: 0; padding: 20px; }
+    .container { background: #ffffff; padding: 30px; border-radius: 8px; max-width: 700px; margin: auto; }
+    .header { background-color: #004085; color: white; padding: 10px; text-align: center; border-radius: 8px 8px 0 0; }
+    .section { margin-top: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #dee2e6; padding: 10px; text-align: left; }
+    th { background-color: #e9ecef; }
+    .footer { margin-top: 30px; font-size: 12px; color: #6c757d; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h2>Mechanic Lien Update</h2>
+    </div>
+
+    <div class="section">
+      <h3>🔹 Vehicle Information</h3>
+      <p><strong>VIN:</strong> {{ vin_data.vin }}</p>
+      <p><strong>Year:</strong> {{ vin_data.year }} | <strong>Make:</strong> {{ vin_data.make }} | <strong>Model:</strong> {{ vin_data.model }}</p>
+    </div>
+
+    <div class="section">
+      <h3>🏠 Owner Information</h3>
+      <p><strong>Owner:</strong> {{ vin_data.owner }}</p>
+      <p><strong>Renewal:</strong> {{ vin_data.renewal }}</p>
+      <p><strong>Lien Holder:</strong> {{ vin_data.lein_holder }}</p>
+      <p><strong>Person Who Left Vehicle:</strong> {{ vin_data.person_left }}</p>
+    </div>
+
+    <div class="section">
+      <h3>📜 Certified Letters Status</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Certification #</th>
+            <th>Certified Number</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{ cert_table_rows | safe }}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="footer">
+      You are receiving this email because your dealership is registered with MyTitleGuy's Mechanic Lien Filing Service.<br>
+      For assistance, please contact us at markacaffey@gmail.com.
+    </div>
+  </div>
+</body>
+</html>

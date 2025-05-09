@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Mechanic Lien System{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center text-primary">🚗 Mechanic Lien Dashboard</h2>
+    
+    <!-- ✅ Summary Cards -->
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary mb-3">
+                <div class="card-header">Total Liens</div>
+                <div class="card-body">
+                    <h4 class="card-title">{{ total_liens }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning mb-3">
+                <div class="card-header">Liens Started</div>
+                <div class="card-body">
+                    <h4 class="card-title">{{ liens_started }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info mb-3">
+                <div class="card-header">Liens In Process</div>
+                <div class="card-body">
+                    <h4 class="card-title">{{ liens_in_process }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-header">Liens Finished</div>
+                <div class="card-body">
+                    <h4 class="card-title">{{ liens_finished }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ✅ Recent Liens Section -->
+    <div class="card mt-4">
+        <div class="card-header bg-dark text-white">📌 Recent Liens (Sorted by Date Notified)</div>
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>VIN</th>
+                        <th>Year</th>
+                        <th>Make</th>
+                        <th>Model</th>
+                        <th>Date Notified</th>
+                        <th>Dealer</th>
+                        <th>Status</th>
+                        <th>Update Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in recent_liens %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('select_vin', vin_id=record.vin) }}" class="text-primary">
+                                {{ record.vin }}
+                            </a>
+                        </td>
+                        <td>{{ record.year }}</td>
+                        <td>{{ record.make }}</td>
+                        <td>{{ record.model }}</td>
+                        <td>{{ record.date_notified }}</td>
+                        <td>{{ record.dealer_name }}</td>
+                        <td><span class="badge bg-info">{{ record.status }}</span></td>
+                        <td>
+                            <form action="{{ url_for('update_lien_status', vin=record.vin) }}" method="POST">
+                                <select name="status" class="form-select form-select-sm" required>
+                                    <option value="" disabled selected>-- Select Status --</option>
+                                    <option value="Started" {% if record.status == 'Started' %}selected{% endif %}>Started</option>
+                                    <option value="In Process" {% if record.status == 'In Process' %}selected{% endif %}>In Process</option>
+                                    <option value="Ready for Title" {% if record.status == 'Ready for Title' %}selected{% endif %}>Ready for Title</option>
+                                    <option value="Finished" {% if record.status == 'Finished' %}selected{% endif %}>Finished</option>
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-primary mt-1">Update</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center">No recent liens found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ✅ Open Liens Section -->
+    <div class="card mt-4">
+        <div class="card-header bg-danger text-white">🔥 Open Liens</div>
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>VIN</th>
+                        <th>Year</th>
+                        <th>Make</th>
+                        <th>Model</th>
+                        <th>Repair Amount</th>
+                        <th>Dealer</th>
+                        <th>Status</th>
+                        <th>Update Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in open_liens %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('select_vin', vin_id=record.vin) }}" class="text-danger">
+                                {{ record.vin }}
+                            </a>
+                        </td>
+                        <td>{{ record.year }}</td>
+                        <td>{{ record.make }}</td>
+                        <td>{{ record.model }}</td>
+                        <td>${{ record.repair_amount }}</td>
+                        <td>{{ record.dealer_name }}</td>
+                        <td><span class="badge bg-warning">{{ record.status }}</span></td>
+                        <td>
+                            <form action="{{ url_for('update_lien_status', vin=record.vin) }}" method="POST">
+                                <select name="status" class="form-select form-select-sm" required>
+                                    <option value="" disabled selected>-- Select Status --</option>
+                                    <option value="Started" {% if record.status == 'Started' %}selected{% endif %}>Started</option>
+                                    <option value="In Process" {% if record.status == 'In Process' %}selected{% endif %}>In Process</option>
+                                    <option value="Ready for Title" {% if record.status == 'Ready for Title' %}selected{% endif %}>Ready for Title</option>
+                                    <option value="Finished" {% if record.status == 'Finished' %}selected{% endif %}>Finished</option>
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-primary mt-1">Update</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center">No open liens available.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

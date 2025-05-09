@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}📄 VIN Records{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2>🚗 Recently Added VINs</h2>
+    <table class="table table-bordered table-striped mt-3">
+        <thead class="table-dark">
+            <tr>
+                <th>Created</th>
+                <th>VIN</th>
+                <th>Year</th>
+                <th>Make</th>
+                <th>Model</th>
+                <th>Dealer ID</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for vin in vins %}
+            <tr>
+                <td>{{ vin.created_at }}</td>
+                <td><code>{{ vin.vin }}</code></td>
+                <td>{{ vin.year }}</td>
+                <td>{{ vin.make }}</td>
+                <td>{{ vin.model }}</td>
+                <td>{{ vin.dealer_id }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

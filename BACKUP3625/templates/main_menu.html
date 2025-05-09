@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Main Menu{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="text-center text-primary">Mechanic Lien System</h1>
+    
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+        <ul class="navbar-nav mx-auto">
+            <li class="nav-item">
+                <a class="nav-link active" href="{{ url_for('index') }}">Home</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('view_dealers') }}">View Dealers</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('search_vin') }}">🔍 Search VIN</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('search_vin') }}">🔍 Search VIN</a> <!-- New Menu Item -->
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Menu Cards -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-3 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">View Dealers</h5>
+                    <p class="card-text">View and manage registered dealers.</p>
+                    <a href="{{ url_for('view_dealers') }}" class="btn btn-primary">Go</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card mb-3 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">Add Dealer</h5>
+                    <p class="card-text">Add a new dealer to the database.</p>
+                    <a href="{{ url_for('add_dealer') }}" class="btn btn-primary">Go</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card mb-3 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">Generate Mechanic Letter</h5>
+                    <p class="card-text">Create and print mechanic lien letters.</p>
+                    <a href="{{ url_for('generate_mechanic_lien') }}" class="btn btn-primary">Generate Mechanic Lien</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card mb-3 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">Add VIN</h5>
+                    <p class="card-text">Enter vehicle identification number details.</p>
+                    <a href="{{ url_for('select_dealer_for_vin') }}" class="btn btn-primary">Go</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card mb-3 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">Generate Forms</h5>
+                    <p class="card-text">Generate required forms based on vehicle data.</p>
+                    <a href="{{ url_for('generate_forms') }}" class="btn btn-primary">Go</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 🔍 Search VIN Section -->
+        <div class="col-md-6">
+            <div class="card mb-3 shadow-sm border-primary">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">🔍 Search VIN</h5>
+                    <p class="card-text">Search for a vehicle by the last 4 digits of its VIN.</p>
+                    <a href="{{ url_for('search_vin') }}" class="btn btn-primary">Go</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

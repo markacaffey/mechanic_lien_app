@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Pricing Plans{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="text-center mb-5">Choose the Right Plan for Your Dealership</h2>
+
+    <div class="row">
+        <!-- Flex Plan -->
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card h-100 border-primary">
+                <div class="card-header bg-primary text-white text-center">
+                    <h4 class="my-0">Flex Plan</h4>
+                </div>
+                <div class="card-body text-center">
+                    <h2 class="card-title pricing-card-title">$100<span class="text-muted">/per lien</span></h2>
+                    <ul class="list-unstyled mt-3 mb-4">
+                        <li>Pay as you go</li>
+                        <li>1 lien at a time</li>
+                        <li>Full access to features</li>
+                    </ul>
+                    <form action="{{ url_for('create_checkout_session', product_id='prod_S5UkBvabSnSyT0') }}" method="GET">
+                        <button type="submit" class="btn btn-outline-primary btn-block">Select</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Starter Plan -->
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card h-100 border-success">
+                <div class="card-header bg-success text-white text-center">
+                    <h4 class="my-0">Starter Plan</h4>
+                </div>
+                <div class="card-body text-center">
+                    <h2 class="card-title pricing-card-title">$199<span class="text-muted">/mo</span></h2>
+                    <ul class="list-unstyled mt-3 mb-4">
+                        <li>Includes 3 liens/month</li>
+                        <li>$75 per additional lien</li>
+                        <li>Email & chat support</li>
+                    </ul>
+                    <form action="{{ url_for('create_checkout_session', product_id='prod_S5o6uwMUHoVEwt') }}" method="GET">
+                        <button type="submit" class="btn btn-outline-success btn-block">Select</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pro Plan -->
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card h-100 border-info">
+                <div class="card-header bg-info text-white text-center">
+                    <h4 class="my-0">Pro Plan</h4>
+                </div>
+                <div class="card-body text-center">
+                    <h2 class="card-title pricing-card-title">$375<span class="text-muted">/mo</span></h2>
+                    <ul class="list-unstyled mt-3 mb-4">
+                        <li>Includes 10 liens/month</li>
+                        <li>$50 per additional lien</li>
+                        <li>Priority support</li>
+                    </ul>
+                    <form action="{{ url_for('create_checkout_session', product_id='prod_S5o7tXn3FY1Eq1') }}" method="GET">
+                        <button type="submit" class="btn btn-outline-info btn-block">Select</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enterprise Plan -->
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card h-100 border-dark">
+                <div class="card-header bg-dark text-white text-center">
+                    <h4 class="my-0">Enterprise Plan</h4>
+                </div>
+                <div class="card-body text-center">
+                    <h2 class="card-title pricing-card-title">$699<span class="text-muted">/mo</span></h2>
+                    <ul class="list-unstyled mt-3 mb-4">
+                        <li>Includes 25 liens/month</li>
+                        <li>Custom pricing for >25</li>
+                        <li>Premium support</li>
+                    </ul>
+                    <form action="{{ url_for('create_checkout_session', product_id='prod_S5oBIn40Hf1AES') }}" method="GET">
+                        <button type="submit" class="btn btn-outline-dark btn-block">Select</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

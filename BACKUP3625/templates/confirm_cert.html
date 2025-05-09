@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center mb-4">📜 Confirm Certified Letter</h2>
+
+    <form method="POST" action="{{ url_for('update_cert_status') }}">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4>Certified Letter Match Found</h4>
+            </div>
+            <div class="card-body">
+                <p><strong>Full Certificate Number:</strong> {{ matched_cert }}</p>
+                <p><strong>VIN:</strong> {{ vin.vin }}</p>
+                <input type="hidden" name="vin_id" value="{{ vin.id }}">
+                <input type="hidden" name="matched_status_field" value="{{ matched_status_field }}">
+                <input type="hidden" name="matched_cert" value="{{ matched_cert }}">
+            </div>
+        </div>
+
+        <div class="text-center mt-3">
+            <button type="submit" class="btn btn-lg btn-success">✅ Confirm Delivery</button>
+            <a href="{{ url_for('certify_tracking') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
