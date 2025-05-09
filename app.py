@@ -830,7 +830,7 @@ def edit_vin(vin_id):
         status = request.form.get("status", "").strip()  # ✅ Capture the status
 
         # ✅ Update the database
-        cursor.execute("""
+
 
         vin_data = {key: request.form.get(key, "") for key in request.form}
 
