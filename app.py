@@ -797,48 +797,13 @@ def edit_vin(vin_id):
     cursor = conn.cursor()
 
     if request.method == "POST":
-
-        # ✅ Capture form data (including status)
-        vin = request.form.get("vin", "").strip()
-        year = request.form.get("year", "").strip()
-        make = request.form.get("make", "").strip()
-        model = request.form.get("model", "").strip()
-        body = request.form.get("body", "").strip()
-        color = request.form.get("color", "").strip()
-        plate = request.form.get("plate", "").strip()
-        weight = request.form.get("weight", "").strip()
-        cweight = request.form.get("cweight", "").strip()
-        odometer = request.form.get("odometer", "").strip()
-        repair_amount = request.form.get("repair_amount", "").strip()
-        county = request.form.get("county", "").strip()
-        owner = request.form.get("owner", "").strip()
-        owner_address1 = request.form.get("owner_address1", "").strip()
-        owner_address2 = request.form.get("owner_address2", "").strip()
-        renewal = request.form.get("renewal", "").strip()
-        renewal_address1 = request.form.get("renewal_address1", "").strip()
-        renewal_address2 = request.form.get("renewal_address2", "").strip()
-        lein_holder = request.form.get("lein_holder", "").strip()
-        lein_holder_address1 = request.form.get("lein_holder_address1", "").strip()
-        lein_holder_address2 = request.form.get("lein_holder_address2", "").strip()
-        person_left = request.form.get("person_left", "").strip()
-        person_left_address1 = request.form.get("person_left_address1", "").strip()
-        person_left_address2 = request.form.get("person_left_address2", "").strip()
-        date_left = request.form.get("date_left", "").strip()
-        date_completed = request.form.get("date_completed", "").strip()
-        date_notified = request.form.get("date_notified", "").strip()
-        sale_date = request.form.get("sale_date", "").strip()
-        status = request.form.get("status", "").strip()  # ✅ Capture the status
-
-        # ✅ Update the database
-        cursor.execute("""
-
-        vin_data = {key: request.form.get(key, "") for key in request.form}
+        vin_data = {key: request.form.get(key, "").strip() for key in request.form}
 
         # Handle cert status updates
-        cert_status_fields = [request.form.get(f"cert{i}_status", "").strip() for i in range(1, 7)]
+        cert_status_fields = [vin_data.get(f"cert{i}_status", "") for i in range(1, 7)]
 
-        cursor.execute(f"""
-
+        # Perform UPDATE
+        cursor.execute("""
             UPDATE vins SET
                 vin = ?, year = ?, make = ?, model = ?, body = ?, color = ?, 
                 plate = ?, weight = ?, cweight = ?, odometer = ?, repair_amount = ?, 
@@ -847,16 +812,6 @@ def edit_vin(vin_id):
                 lein_holder = ?, lein_holder_address1 = ?, lein_holder_address2 = ?, 
                 person_left = ?, person_left_address1 = ?, person_left_address2 = ?, 
                 date_left = ?, date_completed = ?, date_notified = ?, sale_date = ?, 
-
-                status = ?
-            WHERE vin = ?
-        """, (
-            vin, year, make, model, body, color, plate, weight, cweight, odometer,
-            repair_amount, county, owner, owner_address1, owner_address2, renewal, 
-            renewal_address1, renewal_address2, lein_holder, lein_holder_address1, 
-            lein_holder_address2, person_left, person_left_address1, person_left_address2, 
-            date_left, date_completed, date_notified, sale_date, status, vin_id
-
                 status = ?, 
                 cert1_status = ?, cert2_status = ?, cert3_status = ?, 
                 cert4_status = ?, cert5_status = ?, cert6_status = ?
@@ -870,19 +825,22 @@ def edit_vin(vin_id):
             vin_data["person_left"], vin_data["person_left_address1"], vin_data["person_left_address2"],
             vin_data["date_left"], vin_data["date_completed"], vin_data["date_notified"], vin_data["sale_date"],
             vin_data["status"], *cert_status_fields, vin_id
-
         ))
 
         conn.commit()
         conn.close()
-
-
-        # ✅ Redirect to view the updated record
+        flash("✅ VIN updated successfully!")
         return redirect(url_for("view_vin", vin_id=vin_id))
 
-    # ✅ Fetch VIN data for GET request (displaying the form)
+    # GET request: Load VIN record for form
+    cursor.execute("SELECT * FROM vins WHERE vin = ?", (vin_id,))
+    vin = cursor.fetchone()
+    conn.close()
 
-        flash("✅ VIN updated successfully!")
+    if vin:
+        return render_template("edit_vin.html", vin=vin)
+    else:
+        flash("❌ VIN not found.")
         return redirect(url_for("dashboard"))
 
     # ✅ Get the record to populate the form
